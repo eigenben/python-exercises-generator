@@ -8,3 +8,6 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Exercises (from external repo)
+data/exercises/
