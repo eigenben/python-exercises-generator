@@ -13,7 +13,7 @@ DEFAULT_MODEL = "gpt-5-mini"
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--plain", action="store_true", help="Print result without markdown formatting"
+        "--pretty", action="store_true", help="Print result with markdown formatting"
     )
     parser.add_argument(
         "--examples",
@@ -58,8 +58,8 @@ if __name__ == "__main__":
 
     result = generator(problem_statement)
 
-    if args.plain:
-        print(result)
-    else:
+    if args.pretty:
         console = Console()
         console.print(Markdown(result))
+    else:
+        print(result)
