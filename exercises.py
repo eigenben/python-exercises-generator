@@ -19,6 +19,8 @@ class Exercise:
     @classmethod
     def load(cls, exercise_code: str) -> "Exercise":
         path = pathlib.Path("data/exercises") / exercise_code
+        if not path.exists():
+            raise FileNotFoundError(f"Exercise not found: '{exercise_code}'")
         metadata_path = path / "metadata.yml"
         if not metadata_path.exists():
             raise FileNotFoundError(f"Missing required file: {metadata_path}")
