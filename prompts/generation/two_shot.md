@@ -2,11 +2,11 @@ You are tasked with generating solutions to python programming problems, which i
 
 Here are some examples of existing problem and solution pairs, each in <example></example> tags with the problem inside <problem></problem> tags and the solution inside <solution></solution> tags. Use these examples as a guide for how to format your output and the level of detail required in the explanations:
 
-{ examples }
+{{ examples }}
 
 Here is the new problem you need to solve:
 
 <problem>
-{ problem }
+{{ problem }}
 </problem>
 

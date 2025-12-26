@@ -1,7 +1,7 @@
 import argparse
 import sys
 from exercises import Exercise
-from generators import Generator
+from generation import Generator
 from rich.console import Console
 from rich.markdown import Markdown
 
@@ -11,29 +11,39 @@ DEFAULT_MODEL = "gpt-5-mini"
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
+    parser = argparse.ArgumentParser(
+        description="Python exercises generator CLI"
+    )
+    subparsers = parser.add_subparsers(
+        dest="action", required=True, help="Action to perform"
+    )
+
+    # Generate subcommand
+    generate_parser = subparsers.add_parser(
+        "generate", help="Generate exercise solutions"
+    )
+    generate_parser.add_argument(
         "--pretty", action="store_true", help="Print result with markdown formatting"
     )
-    parser.add_argument(
+    generate_parser.add_argument(
         "--examples",
         type=str,
         default=",".join(DEFAULT_EXERCISES),
         help="Comma-separated list of example exercise names",
     )
-    parser.add_argument(
+    generate_parser.add_argument(
         "--prompt",
         type=str,
         default=DEFAULT_PROMPT,
         help="Name of the prompt template to use",
     )
-    parser.add_argument(
+    generate_parser.add_argument(
         "--exercise",
         type=str,
         default=None,
         help="Name of the exercise to use as the problem statement",
     )
-    parser.add_argument(
+    generate_parser.add_argument(
         "--model",
         type=str,
         default=DEFAULT_MODEL,

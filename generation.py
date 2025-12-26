@@ -1,33 +1,28 @@
 import os
-import pathlib
 from typing import List
 from openai import OpenAI
 from exercises import Exercise
+from helpers import render_prompt
 
+DEFAULT_MODEL = "mistralai/devstral-2512:free"
 
 class Generator:
     def __init__(
         self,
         prompt_name: str,
         example_exercises: List[Exercise],
-        model: str = "gpt-5-mini",
+        model: str = DEFAULT_MODEL,
     ):
         self.prompt_name = prompt_name
         self.example_exercises = example_exercises
         self.model = model
-        self.template = self._load_template()
-
-    def _load_template(self) -> str:
-        prompt_path = pathlib.Path("prompts") / f"{self.prompt_name}.md"
-        if not prompt_path.exists():
-            raise FileNotFoundError(f"Prompt template not found: {prompt_path}")
-        return prompt_path.read_text()
 
     def prompt(self, problem_statement: str) -> str:
         examples_text = self._format_examples()
-        prompt = self.template.replace("{ examples }", examples_text)
-        prompt = prompt.replace("{ problem }", problem_statement)
-        return prompt
+        return render_prompt(
+            f"generation/{self.prompt_name}",
+            {"examples": examples_text, "problem": problem_statement},
+        )
 
     def __call__(self, problem_statement: str) -> str:
         if "LLM_BASE_URL" in os.environ:
