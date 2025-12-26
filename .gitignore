@@ -11,3 +11,6 @@ wheels/
 
 # Exercises (from external repo)
 data/exercises/
+
+# Output
+output/

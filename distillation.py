@@ -3,14 +3,21 @@ from exercises import Exercise
 from helpers import render_prompt, call_llm
 
 DEFAULT_EXERCISES = [
+    "ages",
     "compact",
+    "easydict",
     "find_duplicates",
+    "flatten",
     "friday",
+    "minmax",
+    "numeric_range",
+    "pluck",
     "reverse_words",
+    "transpose",
     "window"
 ]
 
-class Generator:
+class StyleDistiller:
     def __init__(
         self,
         prompt_name: str = "default",
@@ -24,24 +31,21 @@ class Generator:
         else:
             self.example_exercises = example_exercises
 
-    def prompt(self, problem_statement: str) -> str:
+    def prompt(self) -> str:
         examples_text = self._format_examples()
         return render_prompt(
-            f"generation/{self.prompt_name}",
-            {"examples": examples_text, "problem": problem_statement},
+            f"distillation/{self.prompt_name}",
+            {"examples": examples_text},
         )
 
-    def __call__(self, problem_statement: str) -> str:
-        prompt_text = self.prompt(problem_statement)
+    def __call__(self) -> str:
+        prompt_text = self.prompt()
         return call_llm(prompt_text, model=self.model)
 
     def _format_examples(self) -> str:
         examples = []
         for exercise in self.example_exercises:
             example_text = f"""<example>
-<problem>
-{exercise.problem_md}
-</problem>
 <solution>
 {exercise.solution_md}
 </solution>

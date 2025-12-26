@@ -1,13 +1,10 @@
 import argparse
 import sys
 from exercises import Exercise
-from generation import Generator
+from generation import Generator, DEFAULT_EXERCISES
+from distillation import StyleDistiller
 from rich.console import Console
 from rich.markdown import Markdown
-
-DEFAULT_EXERCISES = ["countdown", "count_lines"]
-DEFAULT_PROMPT = "two_shot"
-DEFAULT_MODEL = "gpt-5-mini"
 
 
 if __name__ == "__main__":
@@ -28,48 +25,94 @@ if __name__ == "__main__":
     generate_parser.add_argument(
         "--examples",
         type=str,
-        default=",".join(DEFAULT_EXERCISES),
+        default=None,
         help="Comma-separated list of example exercise names",
     )
     generate_parser.add_argument(
         "--prompt",
         type=str,
-        default=DEFAULT_PROMPT,
         help="Name of the prompt template to use",
     )
     generate_parser.add_argument(
         "--exercise",
         type=str,
-        default=None,
         help="Name of the exercise to use as the problem statement",
     )
     generate_parser.add_argument(
         "--model",
         type=str,
-        default=DEFAULT_MODEL,
         help="Model to use for generation",
     )
-    args = parser.parse_args()
 
-    example_names = [name.strip() for name in args.examples.split(",")]
-    generator = Generator(
-        prompt_name=args.prompt,
-        example_exercises=[Exercise.load(name) for name in example_names],
-        model=args.model,
+    # Distill subcommand
+    distill_parser = subparsers.add_parser(
+        "distill", help="Distill writing style from example exercises"
+    )
+    distill_parser.add_argument(
+        "--pretty", action="store_true", help="Print result with markdown formatting"
+    )
+    distill_parser.add_argument(
+        "--examples",
+        type=str,
+        default=None,
+        help="Comma-separated list of example exercise names",
+    )
+    distill_parser.add_argument(
+        "--prompt",
+        type=str,
+        help="Name of the prompt template to use",
+    )
+    distill_parser.add_argument(
+        "--model",
+        type=str,
+        help="Model to use for distillation",
     )
 
-    if args.exercise:
-        problem_statement = Exercise.load(args.exercise).problem_md
-    else:
-        if sys.stdin.isatty():
-            parser.print_help()
-            sys.exit(1)
-        problem_statement = sys.stdin.read()
+    args = parser.parse_args()
 
-    result = generator(problem_statement)
+    if args.action == "generate":
+        generator_kwargs = {}
+        if args.prompt is not None:
+            generator_kwargs['prompt_name'] = args.prompt
+        if args.examples is not None:
+            example_names = [name.strip() for name in args.examples.split(",")]
+            generator_kwargs['example_exercises'] = [Exercise.load(name) for name in example_names]
+        if args.model is not None:
+            generator_kwargs['model'] = args.model
 
-    if args.pretty:
-        console = Console()
-        console.print(Markdown(result))
-    else:
-        print(result)
+        generator = Generator(**generator_kwargs)
+
+        if args.exercise:
+            problem_statement = Exercise.load(args.exercise).problem_md
+        else:
+            if sys.stdin.isatty():
+                parser.print_help()
+                sys.exit(1)
+            problem_statement = sys.stdin.read()
+
+        result = generator(problem_statement)
+
+        if args.pretty:
+            console = Console()
+            console.print(Markdown(result))
+        else:
+            print(result)
+
+    elif args.action == "distill":
+        distiller_kwargs = {}
+        if args.prompt is not None:
+            distiller_kwargs['prompt_name'] = args.prompt
+        if args.examples is not None:
+            example_names = [name.strip() for name in args.examples.split(",")]
+            distiller_kwargs['example_exercises'] = [Exercise.load(name) for name in example_names]
+        if args.model is not None:
+            distiller_kwargs['model'] = args.model
+
+        distiller = StyleDistiller(**distiller_kwargs)
+        result = distiller()
+
+        if args.pretty:
+            console = Console()
+            console.print(Markdown(result))
+        else:
+            print(result)
