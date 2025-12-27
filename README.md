@@ -46,19 +46,19 @@ Generate solutions for programming exercise problems using few-shot learning fro
 Generate a solution from a problem statement defined in an exercise:
 
 ```bash
-uv run cli.py generate --exercise countdown --pretty
+uv run python-exercises-generator generate --exercise countdown --pretty
 ```
 
 Generate a solution from a problem statement via stdin:
 
 ```bash
-echo "Write a function that counts down from n to 0" | uv run cli.py generate
+echo "Write a function that counts down from n to 0" | uv run python-exercises-generator generate
 ```
 
 Generate with custom examples and prompt template:
 
 ```bash
-uv run cli.py generate --exercise flatten --examples "ages,compact,easydict" --prompt with_style_1
+uv run python-exercises-generator generate --exercise flatten --examples "ages,compact,easydict" --prompt with_style_1
 ```
 
 #### Generate Options
@@ -76,13 +76,13 @@ Distill and analyze the writing style from a collection of example exercise solu
 Distill style from default examples:
 
 ```bash
-uv run cli.py distill --pretty
+uv run python-exercises-generator distill --pretty
 ```
 
 Distill style from custom examples:
 
 ```bash
-uv run cli.py distill --examples "ages,compact,flatten,minmax" --pretty
+uv run python-exercises-generator distill --examples "ages,compact,flatten,minmax" --pretty
 ```
 
 #### Distill Options

@@ -10,7 +10,7 @@ from rich.console import Console
 from rich.markdown import Markdown
 
 
-if __name__ == "__main__":
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Python exercises generator CLI"
     )
@@ -164,3 +164,7 @@ if __name__ == "__main__":
         
         finetuner = Finetuner(args.model_name, prompt=args.prompt)
         finetuner.train()
+
+
+if __name__ == "__main__":
+    main()
