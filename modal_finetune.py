@@ -43,11 +43,6 @@ def finetune_remote(model_name: str, prompt: str) -> None:
     finetuner = Finetuner(model_name, prompt=prompt)
     finetuner.train()
 
-
-
 @app.local_entrypoint()
-def main(command: str, model_name: str, prompt: str = "default") -> None:
-    if command == "finetune":
-        finetune_remote.remote(model_name, prompt)
-    else:
-        raise ValueError(f"Unknown command: {command}")
+def main(model_name: str, prompt: str = "default") -> None:
+    finetune_remote.remote(model_name, prompt)
