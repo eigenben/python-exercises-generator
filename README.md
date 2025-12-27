@@ -46,19 +46,19 @@ Generate solutions for programming exercise problems using few-shot learning fro
 Generate a solution from a problem statement defined in an exercise:
 
 ```bash
-uv run main.py generate --exercise countdown --pretty
+uv run cli.py generate --exercise countdown --pretty
 ```
 
 Generate a solution from a problem statement via stdin:
 
 ```bash
-echo "Write a function that counts down from n to 0" | uv run main.py generate
+echo "Write a function that counts down from n to 0" | uv run cli.py generate
 ```
 
 Generate with custom examples and prompt template:
 
 ```bash
-uv run main.py generate --exercise flatten --examples "ages,compact,easydict" --prompt with_style_1
+uv run cli.py generate --exercise flatten --examples "ages,compact,easydict" --prompt with_style_1
 ```
 
 #### Generate Options
@@ -76,13 +76,13 @@ Distill and analyze the writing style from a collection of example exercise solu
 Distill style from default examples:
 
 ```bash
-uv run main.py distill --pretty
+uv run cli.py distill --pretty
 ```
 
 Distill style from custom examples:
 
 ```bash
-uv run main.py distill --examples "ages,compact,flatten,minmax" --pretty
+uv run cli.py distill --examples "ages,compact,flatten,minmax" --pretty
 ```
 
 #### Distill Options
@@ -96,7 +96,7 @@ uv run main.py distill --examples "ages,compact,flatten,minmax" --pretty
 
 ### Core Modules
 
-- **main.py**: CLI entry point with argument parsing and subcommand routing
+- **cli.py**: CLI entry point with argument parsing and subcommand routing
 - **generation.py**: `Generator` class for creating exercise solutions via LLM
 - **distillation.py**: `StyleDistiller` class for analyzing writing style patterns
 - **exercises.py**: `Exercise` dataclass for loading and managing exercise data
@@ -125,4 +125,3 @@ Available templates:
 Common template variables:
 - `{{ examples }}`: Replaced with formatted example exercises
 - `{{ problem }}`: Replaced with the problem statement (generation only)
-
