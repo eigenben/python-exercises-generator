@@ -1,8 +1,11 @@
 import argparse
 import sys
+import re
+from pathlib import Path
 from exercises import Exercise
 from generation import Generator, DEFAULT_EXERCISES
 from distillation import StyleDistiller
+from helpers import DEFAULT_MODEL
 from rich.console import Console
 from rich.markdown import Markdown
 
@@ -42,6 +45,14 @@ if __name__ == "__main__":
         "--model",
         type=str,
         help="Model to use for generation",
+    )
+    generate_parser.add_argument(
+        "--save",
+        type=str,
+        nargs='?',
+        const='',
+        default=None,
+        help="Save output to specified file instead of printing to STDOUT (default: output/generations/[prompt]_[exercise]_[model].md)",
     )
 
     # Distill subcommand
@@ -92,11 +103,26 @@ if __name__ == "__main__":
 
         result = generator(problem_statement)
 
-        if args.pretty:
-            console = Console()
-            console.print(Markdown(result))
+        if args.save is not None:
+            if args.save == '':
+                # Build default filename
+                prompt_name = args.prompt or 'default'
+                exercise_name = args.exercise or 'input'
+                model_name = args.model or DEFAULT_MODEL
+                # Sanitize model name: remove everything before "/", then lowercase and alphanumeric + underscores only
+                model_name = model_name.split('/')[-1]
+                model_name_sanitized = re.sub(r'[^a-z0-9_]', '_', model_name.lower())
+                save_path = Path(f"output/generations/{prompt_name}_{exercise_name}_{model_name_sanitized}.md")
+            else:
+                save_path = Path(args.save)
+            save_path.parent.mkdir(parents=True, exist_ok=True)
+            save_path.write_text(result)
         else:
-            print(result)
+            if args.pretty:
+                console = Console()
+                console.print(Markdown(result))
+            else:
+                print(result)
 
     elif args.action == "distill":
         distiller_kwargs = {}
