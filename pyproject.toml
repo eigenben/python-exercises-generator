@@ -17,6 +17,7 @@ finetune = [
     "transformers>=4.57.3",
     "trl>=0.24.0",
     "unsloth>=2025.12.9",
+    "wandb>=0.23.1",
 ]
 
 [dependency-groups]

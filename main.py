@@ -79,6 +79,22 @@ if __name__ == "__main__":
         help="Model to use for distillation",
     )
 
+    # Finetune subcommand
+    finetune_parser = subparsers.add_parser(
+        "finetune", help="Finetune a model on exercise solutions"
+    )
+    finetune_parser.add_argument(
+        "model_name",
+        type=str,
+        help="Name of the model to finetune (e.g., 'llama-3.3-70b')",
+    )
+    finetune_parser.add_argument(
+        "--prompt",
+        type=str,
+        default="default",
+        help="Name of the prompt template to use",
+    )
+
     args = parser.parse_args()
 
     if args.action == "generate":
@@ -142,3 +158,9 @@ if __name__ == "__main__":
             console.print(Markdown(result))
         else:
             print(result)
+
+    elif args.action == "finetune":
+        from finetune import Finetuner
+        
+        finetuner = Finetuner(args.model_name, prompt=args.prompt)
+        finetuner.train()

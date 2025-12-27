@@ -3,6 +3,14 @@ from typing import List, Dict, Optional
 import pathlib
 import yaml
 
+def load_all_exercises() -> List["Exercise"]:
+    exercises = []
+    exercises_path = pathlib.Path("data/exercises")
+    for exercise_dir in exercises_path.iterdir():
+        if exercise_dir.is_dir():
+            exercise = Exercise.load(exercise_dir.name)
+            exercises.append(exercise)
+    return exercises
 
 @dataclass
 class Exercise:
@@ -50,7 +58,7 @@ class Exercise:
         exercise = cls(
             path=path,
             name=metadata.pop("title"),
-            description=metadata.pop("description"),
+            description=metadata.get("description", ""),
             problem_greeting=metadata.get("problem_greeting"),
             solution_greeting=metadata.get("solution_greeting"),
             problem_md=problem_md,
