@@ -1,4 +1,5 @@
 import torch
+from typing import Optional
 from dataclasses import dataclass
 from contextlib import contextmanager
 from rich import print
