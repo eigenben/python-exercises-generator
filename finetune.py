@@ -55,6 +55,21 @@ PRESET_CONFIGS = {
         max_steps=-1,
         num_train_epochs=1,
     ),
+    "qwen3-coder-30b-a3b-instruct": FinetuneConfig(
+        model_name="unsloth/Qwen3-Coder-30B-A3B-Instruct",
+        max_seq_length=2048,
+        dtype=None,
+        load_in_4bit=True,
+        lora_r=16,
+        lora_alpha=16,
+        chat_template=None,
+        chat_template_instruction_part="<|im_start|>user\n",
+        chat_template_response_part="<|im_start|>assistant\n",
+        per_device_train_batch_size=4,
+        gradient_accumulation_steps=1,
+        max_steps=-1,
+        num_train_epochs=1,
+    ),
 }
 
 class Finetuner:
