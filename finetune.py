@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from contextlib import contextmanager
 from rich import print
 from unsloth import FastLanguageModel
-from unsloth.chat_templates import get_chat_template, train_on_responses_only
+from unsloth.chat_templates import get_chat_template, standardize_sharegpt, train_on_responses_only
 from trl import SFTConfig, SFTTrainer
 from transformers import DataCollatorForSeq2Seq
 
@@ -16,7 +16,7 @@ class FinetuneConfig:
     load_in_4bit: bool
     lora_r: int
     lora_alpha: int
-    chat_template: str
+    chat_template: Optional[str]
     chat_template_instruction_part: str
     chat_template_response_part: str
     per_device_train_batch_size: int
@@ -40,11 +40,21 @@ PRESET_CONFIGS = {
         max_steps=-1,
         num_train_epochs=1,
     ),
-    "gpt-oss-20b": None,
-    "mistral-7b-instruct": None,
-    "qwen3-coder-30b-a3b-instruct": None,
-    "nemotron-3-nano-30b-a3b": None,
-    
+    "gpt-oss-20b": FinetuneConfig(
+        model_name="unsloth/gpt-oss-20b",
+        max_seq_length=2048,
+        dtype=None,
+        load_in_4bit=True,
+        lora_r=16,
+        lora_alpha=16,
+        chat_template=None,
+        chat_template_instruction_part="<|start|>user<|message|>",
+        chat_template_response_part="<|start|>assistant<|message|>",
+        per_device_train_batch_size=4,
+        gradient_accumulation_steps=1,
+        max_steps=-1,
+        num_train_epochs=1,
+    ),
 }
 
 class Finetuner:
@@ -84,10 +94,11 @@ class Finetuner:
         return model, tokenizer
 
     def apply_chat_template_to_tokenizer(self):
-        self.tokenizer = get_chat_template(
-            self.tokenizer,
-            chat_template = self.config.chat_template,
-        )
+        if self.config.chat_template is not None:
+            self.tokenizer = get_chat_template(
+                self.tokenizer,
+                chat_template = self.config.chat_template,
+            )
         return self.tokenizer
 
     def load_exercises_dataset(self):
@@ -124,6 +135,7 @@ class Finetuner:
             texts = [self.tokenizer.apply_chat_template(convo, tokenize = False, add_generation_prompt = False) for convo in convos]
             return { "text" : texts, }
 
+        self.dataset = standardize_sharegpt(self.dataset)
         self.dataset = self.dataset.map(formatting_prompts_func, batched=True)
         return self.dataset
 
@@ -162,7 +174,7 @@ class Finetuner:
         self.trainer = trainer
         return trainer
 
-    def save_model(self, output_dir: str = None):
+    def save_model(self, output_dir: Optional[str] = None):
         """Save the finetuned model and tokenizer."""
         finetuned_model_name = f"{self.model_name}-finetuned-python-exercises"
         if output_dir is None:
@@ -273,10 +285,13 @@ class Finetuner:
         print("\n[bold blue]Loading exercises dataset...[/bold blue]")
         self.load_exercises_dataset()
         print(f"[green]✓ Loaded {len(self.dataset)} exercise examples[/green]")
-
+        
         print("\n[bold blue]Applying chat template to dataset...[/bold blue]")
         self.apply_chat_template_to_dataset()
         print("[green]✓ Dataset prepared[/green]")
+
+        print("\n[bold blue]Sample Templated Text...[/bold blue]")
+        print(self.dataset[0]["text"])
 
         # Setup trainer
         print("\n[bold blue]Setting up trainer...[/bold blue]")
