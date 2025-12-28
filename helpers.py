@@ -19,17 +19,24 @@ def render_prompt(prompt_name: str, vars: Mapping[str, Any]) -> str:
     return re.sub(r"\{\{\s*(\w+)\s*\}\}", replace_var, template)
 
 
-def call_llm(prompt: str, model: Optional[str] = None) -> str:
+def call_llm(
+    prompt: str,
+    model: Optional[str] = None,
+    base_url: Optional[str] = None,
+    api_key: Optional[str] = None,
+) -> str:
     """Call LLM with the given prompt and return the response content."""
     if model is None:
         model = DEFAULT_MODEL
 
-    if "LLM_BASE_URL" in os.environ:
-        base_url = os.environ["LLM_BASE_URL"]
-        api_key = os.environ["LLM_API_KEY"]
-    else:
-        base_url = "https://openrouter.ai/api/v1"
-        api_key = os.environ["OPENROUTER_API_KEY"]
+    # Use provided base_url/api_key if given, otherwise fall back to environment variables
+    if base_url is None or api_key is None:
+        if "LLM_BASE_URL" in os.environ:
+            base_url = base_url or os.environ["LLM_BASE_URL"]
+            api_key = api_key or os.environ["LLM_API_KEY"]
+        else:
+            base_url = base_url or "https://openrouter.ai/api/v1"
+            api_key = api_key or os.environ["OPENROUTER_API_KEY"]
 
     client = OpenAI(base_url=base_url, api_key=api_key)
     response = client.chat.completions.create(

@@ -1,9 +1,7 @@
 import argparse
 import sys
-import re
-from pathlib import Path
 from exercises import Exercise
-from generation import Generator, DEFAULT_EXERCISES
+from generation import Generator, BatchGenerator, DEFAULT_EXERCISES
 from distillation import StyleDistiller
 from helpers import DEFAULT_MODEL
 from rich.console import Console
@@ -48,11 +46,55 @@ def main() -> None:
     )
     generate_parser.add_argument(
         "--save",
+        action="store_true",
+        help="Save output to output/generations/[exercise]/[model].md instead of printing to STDOUT",
+    )
+    generate_parser.add_argument(
+        "--base-url",
         type=str,
-        nargs='?',
-        const='',
+        help="Base URL for the LLM API",
+    )
+    generate_parser.add_argument(
+        "--api-key",
+        type=str,
+        help="API key for the LLM API",
+    )
+
+    # Batch generate subcommand
+    batch_generate_parser = subparsers.add_parser(
+        "batch-generate", help="Generate solutions for multiple exercises concurrently"
+    )
+    batch_generate_parser.add_argument(
+        "--exercises",
+        type=str,
+        required=True,
+        help="Comma-separated list of exercise names to generate solutions for",
+    )
+    batch_generate_parser.add_argument(
+        "--examples",
+        type=str,
         default=None,
-        help="Save output to specified file instead of printing to STDOUT (default: output/generations/[prompt]_[exercise]_[model].md)",
+        help="Comma-separated list of example exercise names",
+    )
+    batch_generate_parser.add_argument(
+        "--prompt",
+        type=str,
+        help="Name of the prompt template to use",
+    )
+    batch_generate_parser.add_argument(
+        "--model",
+        type=str,
+        help="Model to use for generation",
+    )
+    batch_generate_parser.add_argument(
+        "--base-url",
+        type=str,
+        help="Base URL for the LLM API",
+    )
+    batch_generate_parser.add_argument(
+        "--api-key",
+        type=str,
+        help="API key for the LLM API",
     )
 
     # Distill subcommand
@@ -106,39 +148,65 @@ def main() -> None:
             generator_kwargs['example_exercises'] = [Exercise.load(name) for name in example_names]
         if args.model is not None:
             generator_kwargs['model'] = args.model
+        if args.base_url is not None:
+            generator_kwargs['base_url'] = args.base_url
+        if args.api_key is not None:
+            generator_kwargs['api_key'] = args.api_key
 
         generator = Generator(**generator_kwargs)
 
         if args.exercise:
             problem_statement = Exercise.load(args.exercise).problem_md
+            exercise_name = args.exercise
         else:
             if sys.stdin.isatty():
                 parser.print_help()
                 sys.exit(1)
             problem_statement = sys.stdin.read()
+            exercise_name = None
 
-        result = generator(problem_statement)
+        result = generator(
+            problem_statement=problem_statement,
+            save=args.save,
+            exercise_name=exercise_name,
+        )
 
-        if args.save is not None:
-            if args.save == '':
-                # Build default filename
-                prompt_name = args.prompt or 'default'
-                exercise_name = args.exercise or 'input'
-                model_name = args.model or DEFAULT_MODEL
-                # Sanitize model name: remove everything before "/", then lowercase and alphanumeric + underscores only
-                model_name = model_name.split('/')[-1]
-                model_name_sanitized = re.sub(r'[^a-z0-9_]', '_', model_name.lower())
-                save_path = Path(f"output/generations/{prompt_name}_{exercise_name}_{model_name_sanitized}.md")
-            else:
-                save_path = Path(args.save)
-            save_path.parent.mkdir(parents=True, exist_ok=True)
-            save_path.write_text(result)
-        else:
+        if not args.save:
             if args.pretty:
                 console = Console()
                 console.print(Markdown(result))
             else:
                 print(result)
+
+    elif args.action == "batch-generate":
+        batch_generator_kwargs = {}
+        if args.prompt is not None:
+            batch_generator_kwargs['prompt_name'] = args.prompt
+        else:
+            batch_generator_kwargs['prompt_name'] = 'default'
+        if args.examples is not None:
+            example_names = [name.strip() for name in args.examples.split(",")]
+            batch_generator_kwargs['example_exercises'] = [Exercise.load(name) for name in example_names]
+        if args.model is not None:
+            batch_generator_kwargs['model'] = args.model
+        if args.base_url is not None:
+            batch_generator_kwargs['base_url'] = args.base_url
+        if args.api_key is not None:
+            batch_generator_kwargs['api_key'] = args.api_key
+
+        batch_generator = BatchGenerator(**batch_generator_kwargs)
+
+        exercise_names = [name.strip() for name in args.exercises.split(",")]
+        results = batch_generator(exercise_names)
+
+        # Print summary of results
+        console = Console()
+        console.print("\n[bold]Batch Generation Results:[/bold]\n")
+        for result in results:
+            if result["success"]:
+                console.print(f"[green]✓[/green] {result['exercise']}: {result['path']}")
+            else:
+                console.print(f"[red]✗[/red] {result['exercise']}: {result['error']}")
 
     elif args.action == "distill":
         distiller_kwargs = {}

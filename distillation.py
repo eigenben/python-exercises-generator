@@ -3,18 +3,18 @@ from exercises import Exercise
 from helpers import render_prompt, call_llm
 
 DEFAULT_EXERCISES = [
-    "ages",
-    "compact",
-    "easydict",
-    "find_duplicates",
-    "flatten",
-    "friday",
-    "minmax",
-    "numeric_range",
-    "pluck",
-    "reverse_words",
-    "transpose",
-    "window"
+    "are_consecutive",
+    "poem",
+    "mask_keys",
+    "has_duplicates",
+    "trim_empty",
+    "glink",
+    "lucas",
+    "fix_newlines",
+    "vote",
+    "easyclass",
+    "moviestats",
+    "random_rename",
 ]
 
 class StyleDistiller:
