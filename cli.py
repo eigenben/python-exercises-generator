@@ -67,8 +67,8 @@ def main() -> None:
     batch_generate_parser.add_argument(
         "--exercises",
         type=str,
-        required=True,
-        help="Comma-separated list of exercise names to generate solutions for",
+        default=None,
+        help="Comma-separated list of exercise names to generate solutions for (defaults to standard exercise set)",
     )
     batch_generate_parser.add_argument(
         "--examples",
@@ -196,7 +196,10 @@ def main() -> None:
 
         batch_generator = BatchGenerator(**batch_generator_kwargs)
 
-        exercise_names = [name.strip() for name in args.exercises.split(",")]
+        if args.exercises is not None:
+            exercise_names = [name.strip() for name in args.exercises.split(",")]
+        else:
+            exercise_names = DEFAULT_EXERCISES
         results = batch_generator(exercise_names)
 
         # Print summary of results

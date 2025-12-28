@@ -79,11 +79,7 @@ Distill style from default examples:
 uv run python-exercises-generator distill --pretty
 ```
 
-Distill style from custom examples:
 
-```bash
-uv run python-exercises-generator distill --examples "ages,compact,flatten,minmax" --pretty
-```
 
 #### Distill Options
 
@@ -91,6 +87,43 @@ uv run python-exercises-generator distill --examples "ages,compact,flatten,minma
 - `--examples`: Comma-separated list of example exercise names (default: uses StyleDistiller defaults: "ages,compact,easydict,find_duplicates,flatten,friday,minmax,numeric_range,pluck,reverse_words,transpose,window")
 - `--prompt`: Name of prompt template to use (default: "default")
 - `--model`: Model to use for distillation (default: "mistralai/devstral-2512:free")
+
+
+#### Generate Batches
+
+Generate solutions for regular (non-finetuned) open source models:
+
+```bash
+uv run python-exercises-generator batch-generate --model meta-llama/llama-3.3-70b-instruct:free
+uv run python-exercises-generator batch-generate --model openai/gpt-oss-20b:free
+uv run python-exercises-generator batch-generate --model mistralai/mistral-7b-instruct:free
+uv run python-exercises-generator batch-generate --model qwen/qwen3-coder-30b-a3b-instruct
+uv run python-exercises-generator batch-generate --model nvidia/nemotron-3-nano-30b-a3b:free
+```
+
+
+Generate solutions for finetuned models:
+
+```bash
+uv run python-exercises-generator batch-generate --model llama-3.3-70b-instruct-finetuned-python-exercises --base-url "http://155.138.225.139:8000/v1/"
+```
+
+```
+```
+#### vLLM Serving
+
+First, ensure vllm is installed:
+
+```bash
+uv pip install vllm --torch-backend=auto
+```
+
+Then invoke like this:
+
+```bash
+uv run vllm serve unsloth/Llama-3.3-70B-Instruct --quantization bitsandbytes --enable-lora --lora-modules llama-3.3-70b-instruct-python-exercises=./output/finetuned_models/llama-3.3-70b-instruct-finetuned-python-exercises
+```
+   ```
 
 ## Architecture
 

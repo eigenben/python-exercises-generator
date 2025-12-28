@@ -5,9 +5,22 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 import re
 
-DEFAULT_EXERCISES = [
+DEFAULT_EXAMPLES = [
     "are_consecutive",
     "has_duplicates",
+]
+
+DEFAULT_EXERCISES = [
+    "poem",
+    "mask_keys",
+    "trim_empty",
+    "glink",
+    "lucas",
+    "fix_newlines",
+    "vote",
+    "easyclass",
+    "moviestats",
+    "random_rename",
 ]
 
 
@@ -60,7 +73,7 @@ class Generator:
         self.base_url = base_url
         self.api_key = api_key
         if example_exercises is None:
-            self.example_exercises = [Exercise.load(name) for name in DEFAULT_EXERCISES]
+            self.example_exercises = [Exercise.load(name) for name in DEFAULT_EXAMPLES]
         else:
             self.example_exercises = example_exercises
 

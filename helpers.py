@@ -4,7 +4,7 @@ import re
 from typing import Any, Mapping, Optional
 from openai import OpenAI
 
-DEFAULT_MODEL = "mistralai/devstral-2512:free"
+DEFAULT_MODEL = "meta-llama/llama-3.3-70b-instruct:free"
 
 
 def render_prompt(prompt_name: str, vars: Mapping[str, Any]) -> str:

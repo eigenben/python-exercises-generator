@@ -25,7 +25,7 @@ class FinetuneConfig:
     num_train_epochs: int
 
 PRESET_CONFIGS = {
-    "llama-3.3-70b": FinetuneConfig(
+    "llama-3.3-70b-instruct": FinetuneConfig(
         model_name="unsloth/Llama-3.3-70B-Instruct",
         max_seq_length=2048,
         dtype=torch.float16,
@@ -40,6 +40,11 @@ PRESET_CONFIGS = {
         max_steps=-1,
         num_train_epochs=1,
     ),
+    "gpt-oss-20b": None,
+    "mistral-7b-instruct": None,
+    "qwen3-coder-30b-a3b-instruct": None,
+    "nemotron-3-nano-30b-a3b": None,
+    
 }
 
 class Finetuner:
