@@ -21,6 +21,7 @@ vllm_image = (
 
 app = modal.App(APP_NAME)
 
+### gpt-oss-20b
 @app.function(
     gpu="H100",
     timeout=30 * 60,
@@ -55,6 +56,7 @@ def serve_gpt_oss_20b() -> None:
 
     subprocess.Popen(" ".join(cmd), shell=True, stdout=sys.stdout, stderr=sys.stdout)
 
+### Qwen3-Coder-30B-A3B-Instruct
 @app.function(
     gpu="H100",
     timeout=30 * 60,
@@ -78,7 +80,42 @@ def serve_qwen3_coder_30b() -> None:
         "unsloth/Qwen3-Coder-30B-A3B-Instruct",
         "--enable-lora",
         "--lora-modules",
-        "unsloth/qwen3-coder-30b-a3b-instruct-finetuned-python-exercises=/root/output/finetuned_models/unsloth/qwen3-coder-30b-a3b-instruct-finetuned-python-exercises",
+        "qwen3-coder-30b-a3b-instruct-finetuned-python-exercises=/root/output/finetuned_models/qwen3-coder-30b-a3b-instruct-finetuned-python-exercises",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000"
+    ]
+
+    print(cmd)
+
+    subprocess.Popen(" ".join(cmd), shell=True, stdout=sys.stdout, stderr=sys.stdout)
+
+### Devstral-Small-2-24B-Instruct-2512
+@app.function(
+    gpu="H100",
+    timeout=30 * 60,
+    image=vllm_image,
+    secrets=[modal.Secret.from_name("huggingface-secret"), modal.Secret.from_name("wandb-secret")],
+    volumes={
+        "/root/output": output_volume,
+        "/root/.cache/huggingface": modal.Volume.from_name("hf-cache-volume", create_if_missing=True),
+        "/root/.cache/vllm": modal.Volume.from_name("vllm-cache-volume", create_if_missing=True),
+    },
+)
+@modal.concurrent(max_inputs=8)
+@modal.web_server(port=8000, startup_timeout=10 * 60)
+def serve_qwen3_coder_30b() -> None:
+    import sys
+    import subprocess
+
+    cmd = [
+        "vllm",
+        "serve",
+        "unsloth/Devstral-Small-2-24B-Instruct-2512",
+        "--enable-lora",
+        "--lora-modules",
+        "devstral-small-2-24b-instruct-2512-finetuned-python-exercises=/root/output/finetuned_models/devstral-small-2-24b-instruct-2512-finetuned-python-exercises",
         "--host",
         "0.0.0.0",
         "--port",

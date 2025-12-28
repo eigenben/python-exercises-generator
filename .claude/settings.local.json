@@ -6,7 +6,8 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:unsloth.ai)",
       "Bash(wc:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "WebSearch"
     ]
   }
 }
