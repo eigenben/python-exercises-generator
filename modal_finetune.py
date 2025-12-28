@@ -43,6 +43,23 @@ def finetune_remote(model_name: str, prompt: str) -> None:
     finetuner = Finetuner(model_name, prompt=prompt)
     finetuner.train()
 
+@app.function(
+    gpu="A100-80GB",
+    timeout=2 * 60 * 60,
+    secrets=[
+        modal.Secret.from_name("huggingface-secret"),
+        modal.Secret.from_name("wandb-secret"),
+    ],
+    volumes={"/root/output": output_volume},
+    image=image,
+)
+def inference_remote(model_name: str, prompt: str) -> None:
+    finetuner = Finetuner(model_name)
+    print(finetuner.inference(prompt))
+
 @app.local_entrypoint()
-def main(model_name: str, prompt: str = "default") -> None:
-    finetune_remote.remote(model_name, prompt)
+def main(command: str, model: str, prompt: str = "default") -> None:
+    if command == "finetune":
+        finetune_remote.remote(model, prompt)
+    elif command == "inference":
+        inference_remote.remote(model, prompt)
