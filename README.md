@@ -124,8 +124,8 @@ uv pip install vllm --torch-backend=auto
 Serving models that have been fine-tuned as LoRA adapters involves serving the original/base model and adding in a LoRA adapter (each of which has a name that can be used as `model_id`). Invoke like this (examples for each fine tune model below):
 
 ```bash
-uv run vllm serve unsloth/Llama-3.3-70B-Instruct --quantization bitsandbytes --enable-lora --lora-modules llama-3.3-70b-instruct-python-exercises=./output/finetuned_models/llama-3.3-70b-instruct-finetuned-python-exercises
-uv run vllm serve unsloth/gpt-oss-20b --enable-lora --lora-modules gpt-oss-20b-python-exercises=./output/finetuned_models/gpt-oss-20b-finetuned-python-exercises
+uv run vllm serve unsloth/Llama-3.3-70B-Instruct --quantization bitsandbytes --enable-lora --lora-modules llama-3.3-70b-instruct-finetuned-python-exercises=./output/finetuned_models/llama-3.3-70b-instruct-finetuned-python-exercises
+uv run vllm serve unsloth/gpt-oss-20b --enable-lora --lora-modules gpt-oss-20b-finetuned-python-exercises=./output/finetuned_models/gpt-oss-20b-finetuned-python-exercises
 ```
 
 Note that `vLLM` especially without quantization can be resource intensive; ensure your system has sufficient GPU memory to load the base model along with the LoRA adapter. 80GB of GPU VRAM recommended to be able to serve all models.
