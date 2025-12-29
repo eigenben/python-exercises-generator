@@ -247,6 +247,32 @@ class Finetuner:
         FastLanguageModel.for_inference(model)
         return model, tokenizer
 
+    def save_merged_model(self, output_dir: Optional[str] = None, save_method: str = "merged_16bit"):
+        """Save the merged model (LoRA adapter merged with base model) locally.
+
+        Args:
+            output_dir: Directory to save the merged model. If None, uses default path.
+            save_method: Method to use for saving. Options: "merged_16bit", "merged_4bit", "lora"
+                        Default is "merged_16bit" which is recommended for vLLM deployment.
+
+        Returns:
+            str: Path where the merged model was saved
+        """
+        if self.model is None or self.tokenizer is None:
+            raise ValueError("Model and tokenizer must be loaded before saving merged model. Call load_finetuned_model() first.")
+
+        finetuned_model_name = f"{self.model_name}-finetuned-python-exercises"
+        if output_dir is None:
+            output_dir = f"output/finetuned_models/{finetuned_model_name}-merged"
+
+        print(f"[bold blue]Saving merged model...[/bold blue]")
+        print(f"[dim]  • Output directory: {output_dir}[/dim]")
+        print(f"[dim]  • Save method: {save_method}[/dim]")
+
+        self.model.save_pretrained_merged(output_dir, self.tokenizer, save_method=save_method)
+
+        return output_dir
+
     def inference(self, user_message: str, max_new_tokens: int = 512) -> str:
         """Run inference on a single user message and return the response."""
         if self.model is None or self.tokenizer is None:

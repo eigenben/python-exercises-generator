@@ -163,6 +163,29 @@ def main() -> None:
         help="The message/prompt to send to the model",
     )
 
+    # Finetune save merged subcommand
+    finetune_save_merged_parser = subparsers.add_parser(
+        "finetune-save-merged", help="Save a finetuned model with LoRA adapter merged into base model"
+    )
+    finetune_save_merged_parser.add_argument(
+        "model_name",
+        type=str,
+        help="Name of the finetuned model to save merged (e.g., 'llama-3.3-70b-instruct')",
+    )
+    finetune_save_merged_parser.add_argument(
+        "--output-dir",
+        type=str,
+        default=None,
+        help="Directory to save the merged model (defaults to output/finetuned_models/{model_name}-finetuned-python-exercises-merged)",
+    )
+    finetune_save_merged_parser.add_argument(
+        "--save-method",
+        type=str,
+        default="merged_16bit",
+        choices=["merged_16bit", "merged_4bit", "lora"],
+        help="Method to use for saving (default: merged_16bit, recommended for vLLM)",
+    )
+
     args = parser.parse_args()
 
     if args.action == "generate":
@@ -271,6 +294,27 @@ def main() -> None:
 
         finetuner = Finetuner(args.model_name)
         print(finetuner.inference(args.message))
+
+    elif args.action == "finetune-save-merged":
+        from finetune import Finetuner
+
+        console = Console()
+        console.print(f"\n[bold blue]Loading finetuned model:[/bold blue] [yellow]{args.model_name}[/yellow]")
+
+        finetuner = Finetuner(args.model_name)
+        finetuner.load_finetuned_model()
+
+        console.print("[green]✓ Finetuned model loaded[/green]")
+
+        output_dir = finetuner.save_merged_model(
+            output_dir=args.output_dir,
+            save_method=args.save_method
+        )
+
+        console.print(f"\n[bold green]✓ Merged model saved successfully![/bold green]")
+        console.print(f"[dim]  • Location: {output_dir}[/dim]")
+        console.print(f"\n[bold blue]Deploy with vLLM:[/bold blue]")
+        console.print(f"[dim]  vllm serve {output_dir}[/dim]\n")
 
 
 if __name__ == "__main__":
