@@ -94,7 +94,6 @@ Generate solutions for a batch of exercises in one go (uses threading to paralle
 uv run python-exercises-generator batch-generate --model meta-llama/llama-3.3-70b-instruct:free
 uv run python-exercises-generator batch-generate --model openai/gpt-oss-20b:free
 uv run python-exercises-generator batch-generate --model qwen/qwen3-coder-30b-a3b-instruct
-uv run python-exercises-generator batch-generate --model mistralai/ministral-14b-2512
 ```
 
 
@@ -104,7 +103,6 @@ Generate solutions for finetuned models (see vLLM serving below):
 uv run python-exercises-generator batch-generate --model llama-3.3-70b-instruct-finetuned-python-exercises --base-url "http://155.138.225.139:8000/v1/"
 uv run python-exercises-generator batch-generate --model gpt-oss-20b-finetuned-python-exercises --base-url "http://155.138.225.139:8000/v1/"
 uv run python-exercises-generator batch-generate --model qwen3-coder-30b-a3b-instruct-finetuned-python-exercises --base-url "http://155.138.225.139:8000/v1/"
-uv run python-exercises-generator batch-generate --model ministral-3-14b-instruct-2512-finetuned-python-exercises --base-url "http://155.138.225.139:8000/v1/"
 ```
 
 #### Batch Generate Options
@@ -134,7 +132,6 @@ Serving models that have been fine-tuned as LoRA adapters involves serving the o
 uv run vllm serve unsloth/Llama-3.3-70B-Instruct --quantization bitsandbytes --enable-lora --lora-modules llama-3.3-70b-instruct-finetuned-python-exercises=./output/finetuned_models/llama-3.3-70b-instruct-finetuned-python-exercises
 uv run vllm serve unsloth/gpt-oss-20b --enable-lora --lora-modules gpt-oss-20b-finetuned-python-exercises=./output/finetuned_models/gpt-oss-20b-finetuned-python-exercises
 uv run vllm serve unsloth/Qwen3-Coder-30B-A3B-Instruct --quantization bitsandbytes --enable-lora --lora-modules qwen3-coder-30b-a3b-instruct-finetuned-python-exercises=./output/finetuned_models/qwen3-coder-30b-a3b-instruct-finetuned-python-exercises
-uv run vllm serve unsloth/Ministral-2-14B-Instruct-2512 --enable-lora --lora-modules ministral-3-14b-instruct-2512-finetuned-python-exercises=./output/finetuned_models/ministral-3-14b-instruct-2512-finetuned-python-exercises
 ```
 
 Note that `vLLM` especially without quantization can be resource intensive; ensure your system has sufficient GPU memory to load the base model along with the LoRA adapter. 80GB of GPU VRAM recommended to be able to serve all models.

@@ -74,21 +74,6 @@ PRESET_CONFIGS = {
         max_steps=-1,
         num_train_epochs=1,
     ),
-    "ministral-3-14b-instruct-2512": FinetuneConfig(
-        model_name="unsloth/Ministral-3-14B-Instruct-2512",
-        max_seq_length=10000,
-        dtype=None,
-        load_in_4bit=False,
-        lora_r=16,
-        lora_alpha=16,
-        chat_template=None,
-        chat_template_instruction_part="[INST]",
-        chat_template_response_part="[/INST]",
-        per_device_train_batch_size=4,
-        gradient_accumulation_steps=1,
-        max_steps=-1,
-        num_train_epochs=1,
-    ),
 }
 
 class Finetuner:
