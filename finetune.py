@@ -232,13 +232,14 @@ class Finetuner:
         FastLanguageModel.for_inference(model)
         return model, tokenizer
 
-    def save_merged_model(self, output_dir: Optional[str] = None, save_method: str = "merged_16bit"):
+    def save_merged_model(self, output_dir: Optional[str] = None, save_method: str = "merged_16bit", push_to_hub: bool = False):
         """Save the merged model (LoRA adapter merged with base model) locally.
 
         Args:
             output_dir: Directory to save the merged model. If None, uses default path.
             save_method: Method to use for saving. Options: "merged_16bit", "merged_4bit", "lora"
                         Default is "merged_16bit" which is recommended for vLLM deployment.
+            push_to_hub: Whether to push the merged model to Hugging Face Hub after saving.
 
         Returns:
             str: Path where the merged model was saved
@@ -255,6 +256,12 @@ class Finetuner:
         print(f"[dim]  • Save method: {save_method}[/dim]")
 
         self.model.save_pretrained_merged(output_dir, self.tokenizer, save_method=save_method)
+
+        if push_to_hub:
+            print(f"\n[bold blue]Pushing merged model to Hugging Face Hub...[/bold blue]")
+            hub_model_name = f"{finetuned_model_name}-merged"
+            self.model.push_to_hub_merged(hub_model_name, self.tokenizer, save_method=save_method, private=True)
+            print(f"[green]✓ Model pushed to hub as {hub_model_name}[/green]")
 
         return output_dir
 

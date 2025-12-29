@@ -190,6 +190,11 @@ def main() -> None:
         choices=["merged_16bit", "merged_4bit", "lora"],
         help="Method to use for saving (default: merged_16bit, recommended for vLLM)",
     )
+    finetune_save_merged_parser.add_argument(
+        "--push-to-hub",
+        action="store_true",
+        help="Push the merged model to Hugging Face Hub after saving",
+    )
 
     args = parser.parse_args()
 
@@ -322,7 +327,8 @@ def main() -> None:
 
         output_dir = finetuner.save_merged_model(
             output_dir=args.output_dir,
-            save_method=args.save_method
+            save_method=args.save_method,
+            push_to_hub=args.push_to_hub
         )
 
         console.print(f"\n[bold green]✓ Merged model saved successfully![/bold green]")
