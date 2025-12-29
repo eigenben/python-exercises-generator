@@ -31,7 +31,7 @@ class FinetuneConfig:
 PRESET_CONFIGS = {
     "llama-3.3-70b-instruct": FinetuneConfig(
         model_name="unsloth/Llama-3.3-70B-Instruct",
-        max_seq_length=2048,
+        max_seq_length=8192,
         dtype=torch.float16,
         load_in_4bit=True,
         lora_r=16,
@@ -46,7 +46,7 @@ PRESET_CONFIGS = {
     ),
     "gpt-oss-20b": FinetuneConfig(
         model_name="unsloth/gpt-oss-20b",
-        max_seq_length=2048,
+        max_seq_length=8192,
         dtype=None,
         load_in_4bit=True,
         lora_r=16,
@@ -61,7 +61,7 @@ PRESET_CONFIGS = {
     ),
     "qwen3-coder-30b-a3b-instruct": FinetuneConfig(
         model_name="unsloth/Qwen3-Coder-30B-A3B-Instruct",
-        max_seq_length=2048,
+        max_seq_length=8192,
         dtype=None,
         load_in_4bit=True,
         lora_r=16,
@@ -76,7 +76,7 @@ PRESET_CONFIGS = {
     ),
     "ministral-3-14b-instruct-2512": FinetuneConfig(
         model_name="unsloth/Ministral-3-14B-Instruct-2512",
-        max_seq_length=2048,
+        max_seq_length=8192,
         dtype=None,
         load_in_4bit=False,
         lora_r=16,
