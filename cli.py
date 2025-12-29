@@ -146,6 +146,11 @@ def main() -> None:
         default="default",
         help="Name of the prompt template to use",
     )
+    finetune_parser.add_argument(
+        "--save-merged",
+        action="store_true",
+        help="Save merged model (LoRA + base) after training in addition to LoRA adapter",
+    )
 
     # Finetune inference subcommand
     finetune_inference_parser = subparsers.add_parser(
@@ -288,6 +293,15 @@ def main() -> None:
 
         finetuner = Finetuner(args.model_name, prompt=args.prompt)
         finetuner.train()
+
+        if args.save_merged:
+            console = Console()
+            console.print("\n[bold blue]Saving merged model...[/bold blue]")
+            output_dir = finetuner.save_merged_model()
+            console.print(f"[bold green]✓ Merged model saved successfully![/bold green]")
+            console.print(f"[dim]  • Location: {output_dir}[/dim]")
+            console.print(f"\n[bold blue]Deploy with vLLM:[/bold blue]")
+            console.print(f"[dim]  vllm serve {output_dir}[/dim]\n")
 
     elif args.action == "finetune-inference":
         from finetune import Finetuner
