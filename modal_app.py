@@ -1,12 +1,9 @@
 import modal
 
 APP_NAME = "python-exercises-generator"
-OUTPUT_VOLUME_NAME = "python-exercises-generator-output"
 
-output_volume = modal.Volume.from_name(
-    OUTPUT_VOLUME_NAME,
-    create_if_missing=True,
-)
+output_volume = modal.Volume.from_name("python-exercises-generator-output", create_if_missing=True)
+hf_cache_volume = modal.Volume.from_name("python-exercises-generator-hf-cache", create_if_missing=True)
 
 image = (
     modal.Image.debian_slim()
@@ -35,7 +32,10 @@ app_context = {
         modal.Secret.from_name("huggingface-secret"),
         modal.Secret.from_name("wandb-secret"),
     ],
-    "volumes": {"/root/output": output_volume},
+    "volumes": {
+        "/root/output": output_volume,
+        "/root/.cache/huggingface": hf_cache_volume,
+    },
     "image": image,
 }
 
