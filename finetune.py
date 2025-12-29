@@ -265,7 +265,7 @@ class Finetuner:
 
         return output_dir
 
-    def inference(self, user_message: str, max_new_tokens: int = 2048) -> str:
+    def inference(self, user_message: str, max_new_tokens: int = 8192) -> str:
         """Run inference on a single user message and return the response."""
         if self.model is None or self.tokenizer is None:
             self.load_finetuned_model_for_inference()
