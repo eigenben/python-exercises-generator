@@ -1,3 +1,7 @@
+import builtins
+
+original_print = builtins.print
+
 import torch
 from typing import Optional
 from dataclasses import dataclass
@@ -78,8 +82,8 @@ PRESET_CONFIGS = {
         lora_r=16,
         lora_alpha=16,
         chat_template=None,
-        chat_template_instruction_part=" [INST] ",
-        chat_template_response_part=" [/INST]",
+        chat_template_instruction_part="[INST]",
+        chat_template_response_part="[/INST]",
         per_device_train_batch_size=4,
         gradient_accumulation_steps=1,
         max_steps=-1,
@@ -320,8 +324,8 @@ class Finetuner:
         self.apply_chat_template_to_dataset()
         print("[green]✓ Dataset prepared[/green]")
 
-        # print("\n[bold blue]Sample Templated Text...[/bold blue]")
-        # print(self.dataset[0]["text"])
+        print("\n[bold blue]Sample Templated Text...[/bold blue]")
+        original_print(self.dataset[0]["text"])
 
         # Setup trainer
         print("\n[bold blue]Setting up trainer...[/bold blue]")
