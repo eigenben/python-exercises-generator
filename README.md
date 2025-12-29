@@ -120,14 +120,20 @@ First, ensure vllm is installed:
 
 ```bash
 uv pip install vllm --torch-backend=auto
+uv pip install bitsandbytes
 ```
 
+If `vllm` install fails with lack of `libcudart.so`, install the CUDA toolkit from NVIDIA (`sudo apt install nvidia-cuda-toolkit` on Ubuntu) or set up CUDA via your package manager.
+
+Then, serve a base model (examples below):
+
+```bash
 Serving models that have been fine-tuned as LoRA adapters involves serving the original/base model and adding in a LoRA adapter (each of which has a name that can be used as `model_id`). Invoke like this (examples for each fine tune model below):
 
 ```bash
 uv run vllm serve unsloth/Llama-3.3-70B-Instruct --quantization bitsandbytes --enable-lora --lora-modules llama-3.3-70b-instruct-finetuned-python-exercises=./output/finetuned_models/llama-3.3-70b-instruct-finetuned-python-exercises
 uv run vllm serve unsloth/gpt-oss-20b --enable-lora --lora-modules gpt-oss-20b-finetuned-python-exercises=./output/finetuned_models/gpt-oss-20b-finetuned-python-exercises
-uv run vllm serve unsloth/Qwen3-Coder-30B-A3B-Instruct --enable-lora --lora-modules qwen3-coder-30b-a3b-instruct-finetuned-python-exercises=./output/finetuned_models/qwen3-coder-30b-a3b-instruct-finetuned-python-exercises
+uv run vllm serve unsloth/Qwen3-Coder-30B-A3B-Instruct --quantization bitsandbytes --enable-lora --lora-modules qwen3-coder-30b-a3b-instruct-finetuned-python-exercises=./output/finetuned_models/qwen3-coder-30b-a3b-instruct-finetuned-python-exercises
 uv run vllm serve unsloth/Ministral-2-14B-Instruct-2512 --enable-lora --lora-modules ministral-3-14b-instruct-2512-finetuned-python-exercises=./output/finetuned_models/ministral-3-14b-instruct-2512-finetuned-python-exercises
 ```
 

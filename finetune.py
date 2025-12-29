@@ -220,7 +220,7 @@ class Finetuner:
         self.finetuned_model_dir = output_dir
         return output_dir
 
-    def load_finetuned_modal(self, output_dir: Optional[str] = None):
+    def load_finetuned_model(self, output_dir: Optional[str] = None):
         """Load the finetuned model and tokenizer from disk."""
         if output_dir is None:
             if self.finetuned_model_dir:
@@ -242,10 +242,15 @@ class Finetuner:
         self.model.eval()
         return model, tokenizer
 
+    def load_finetuned_model_for_inference(self, output_dir: Optional[str] = None):
+        model, tokenizer = self.load_finetuned_model(output_dir)
+        FastLanguageModel.for_inference(model)
+        return model, tokenizer
+
     def inference(self, user_message: str, max_new_tokens: int = 512) -> str:
         """Run inference on a single user message and return the response."""
         if self.model is None or self.tokenizer is None:
-            self.load_finetuned_modal()
+            self.load_finetuned_model_for_inference()
 
         FastLanguageModel.for_inference(self.model)
 

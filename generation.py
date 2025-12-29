@@ -67,9 +67,15 @@ class Generator:
         model: Optional[str] = None,
         base_url: Optional[str] = None,
         api_key: Optional[str] = None,
+        finetuned_model: Optional[str] = None,
     ):
         self.prompt_name = prompt_name
-        self.model = model
+        self.finetuned_model = finetuned_model
+        # If finetuned_model is specified but model is not, default model name
+        if finetuned_model is not None and model is None:
+            self.model = f"{finetuned_model}-finetuned-python-exercises"
+        else:
+            self.model = model
         self.base_url = base_url
         self.api_key = api_key
         if example_exercises is None:
@@ -91,12 +97,18 @@ class Generator:
         exercise_name: Optional[str] = None,
     ) -> str:
         prompt_text = self.prompt(problem_statement)
-        result = call_llm(
-            prompt_text,
-            model=self.model,
-            base_url=self.base_url,
-            api_key=self.api_key,
-        )
+
+        if self.finetuned_model is not None:
+            from finetune import Finetuner
+            finetuner = Finetuner(self.finetuned_model)
+            result = finetuner.inference(prompt_text)
+        else:
+            result = call_llm(
+                prompt_text,
+                model=self.model,
+                base_url=self.base_url,
+                api_key=self.api_key,
+            )
 
         if save:
             if exercise_name is None:
@@ -133,10 +145,16 @@ class BatchGenerator:
         model: Optional[str] = None,
         base_url: Optional[str] = None,
         api_key: Optional[str] = None,
+        finetuned_model: Optional[str] = None,
     ):
         self.prompt_name = prompt_name
         self.example_exercises = example_exercises
-        self.model = model
+        self.finetuned_model = finetuned_model
+        # If finetuned_model is specified but model is not, default model name
+        if finetuned_model is not None and model is None:
+            self.model = f"{finetuned_model}-finetuned-python-exercises"
+        else:
+            self.model = model
         self.base_url = base_url
         self.api_key = api_key
 
@@ -150,6 +168,13 @@ class BatchGenerator:
             List of dicts containing exercise name, output path, and success status
         """
         results = []
+
+        # If using a finetuned model, create and load a single instance
+        finetuner = None
+        if self.finetuned_model is not None:
+            from finetune import Finetuner
+            finetuner = Finetuner(self.finetuned_model)
+            finetuner.load_finetuned_model_for_inference()
 
         def generate_and_save(exercise_name: str) -> dict:
             """Generate solution for a single exercise and save it."""
@@ -166,15 +191,26 @@ class BatchGenerator:
                     api_key=self.api_key,
                 )
 
-                # Generate the solution
-                result = generator(exercise.problem_md)
+                # Generate the prompt
+                prompt_text = generator.prompt(exercise.problem_md)
+
+                # Generate the solution using finetuner or regular LLM
+                if finetuner is not None:
+                    result = finetuner.inference(prompt_text)
+                else:
+                    result = call_llm(
+                        prompt_text,
+                        model=self.model,
+                        base_url=self.base_url,
+                        api_key=self.api_key,
+                    )
 
                 # Save the result
                 save_path = save_generation(
                     content=result,
                     prompt_name=self.prompt_name,
                     exercise_name=exercise_name,
-                    model=self.model,
+                    model=self.finetuned_model or self.model,
                 )
 
                 return {
@@ -191,16 +227,23 @@ class BatchGenerator:
                     "error": str(e),
                 }
 
-        # Use ThreadPoolExecutor to run generations concurrently
-        with ThreadPoolExecutor() as executor:
-            # Submit all tasks
-            future_to_exercise = {
-                executor.submit(generate_and_save, name): name
-                for name in exercise_names
-            }
+        # Run sequentially if using finetuned model, in parallel otherwise
+        if self.finetuned_model is not None:
+            # Sequential execution for finetuned models
+            for exercise_name in exercise_names:
+                result = generate_and_save(exercise_name)
+                results.append(result)
+        else:
+            # Use ThreadPoolExecutor to run generations concurrently
+            with ThreadPoolExecutor() as executor:
+                # Submit all tasks
+                future_to_exercise = {
+                    executor.submit(generate_and_save, name): name
+                    for name in exercise_names
+                }
 
-            # Collect results as they complete
-            for future in as_completed(future_to_exercise):
-                results.append(future.result())
+                # Collect results as they complete
+                for future in as_completed(future_to_exercise):
+                    results.append(future.result())
 
         return results

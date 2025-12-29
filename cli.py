@@ -45,6 +45,11 @@ def main() -> None:
         help="Model to use for generation",
     )
     generate_parser.add_argument(
+        "--finetuned-model",
+        type=str,
+        help="Finetuned model to use for generation (overrides --model)",
+    )
+    generate_parser.add_argument(
         "--save",
         action="store_true",
         help="Save output to output/generations/[exercise]/[model].md instead of printing to STDOUT",
@@ -85,6 +90,11 @@ def main() -> None:
         "--model",
         type=str,
         help="Model to use for generation",
+    )
+    batch_generate_parser.add_argument(
+        "--finetuned-model",
+        type=str,
+        help="Finetuned model to use for generation (overrides --model)",
     )
     batch_generate_parser.add_argument(
         "--base-url",
@@ -137,6 +147,22 @@ def main() -> None:
         help="Name of the prompt template to use",
     )
 
+    # Finetune inference subcommand
+    finetune_inference_parser = subparsers.add_parser(
+        "finetune-inference", help="Run inference with a finetuned model"
+    )
+    finetune_inference_parser.add_argument(
+        "model_name",
+        type=str,
+        help="Name of the finetuned model to use for inference",
+    )
+    finetune_inference_parser.add_argument(
+        "--message",
+        type=str,
+        required=True,
+        help="The message/prompt to send to the model",
+    )
+
     args = parser.parse_args()
 
     if args.action == "generate":
@@ -148,6 +174,8 @@ def main() -> None:
             generator_kwargs['example_exercises'] = [Exercise.load(name) for name in example_names]
         if args.model is not None:
             generator_kwargs['model'] = args.model
+        if args.finetuned_model is not None:
+            generator_kwargs['finetuned_model'] = args.finetuned_model
         if args.base_url is not None:
             generator_kwargs['base_url'] = args.base_url
         if args.api_key is not None:
@@ -189,6 +217,8 @@ def main() -> None:
             batch_generator_kwargs['example_exercises'] = [Exercise.load(name) for name in example_names]
         if args.model is not None:
             batch_generator_kwargs['model'] = args.model
+        if args.finetuned_model is not None:
+            batch_generator_kwargs['finetuned_model'] = args.finetuned_model
         if args.base_url is not None:
             batch_generator_kwargs['base_url'] = args.base_url
         if args.api_key is not None:
@@ -232,9 +262,15 @@ def main() -> None:
 
     elif args.action == "finetune":
         from finetune import Finetuner
-        
+
         finetuner = Finetuner(args.model_name, prompt=args.prompt)
         finetuner.train()
+
+    elif args.action == "finetune-inference":
+        from finetune import Finetuner
+
+        finetuner = Finetuner(args.model_name)
+        print(finetuner.inference(args.message))
 
 
 if __name__ == "__main__":
