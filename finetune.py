@@ -340,8 +340,9 @@ class Finetuner:
         self.apply_chat_template_to_dataset()
         print("[green]✓ Dataset prepared[/green]")
 
-        print("\n[bold blue]Sample Templated Text...[/bold blue]")
-        original_print(self.dataset[0]["text"])
+        # If we need to diagnose chat template issues...
+        # print("\n[bold blue]Sample Templated Text...[/bold blue]")
+        # original_print(self.dataset[0]["text"])
 
         # Setup trainer
         print("\n[bold blue]Setting up trainer...[/bold blue]")
