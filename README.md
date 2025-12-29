@@ -1,6 +1,6 @@
 # Python Exercises Generator
 
-Tools to generate Python programming exercise solutions and distill writing styles based on [TruthfulTechnology/exercises](https://github.com/TruthfulTechnology/exercises).
+This is a tool to generate Python programming exercise solutions and distill writing styles of python exercises using large language models (LLMs). It supports few-shot learning from example exercises and can fine-tune models for improved performance. This is primarily an exploratory project to investigate LLM capabilities and limitations of fine tuning.
 
 ## Installation
 
@@ -16,9 +16,12 @@ If fine tuning (NVIDIA GPU required with CUDA v12.8+), install the additional fi
 uv sync --extra finetune
 ```
 
-## Local Setup
+Then set up a default set of examples/exercises to use when generating/distilling by editing the `.env` file:
 
-After cloning the repository, place any sample exercises you want to use in the `data/exercises` directory. Each exercise should be in its own subdirectory with the required files (`metadata.yml`, `problem.md`, `solution.md`, etc.).
+```bash
+cp .env.sample .env
+
+Finally, place any sample exercises you want to use in the `data/exercises` directory. Each exercise should be in its own subdirectory with the required files (`metadata.yml`, `problem.md`, `solution.md`, etc.).
 
 ## Configuration
 
@@ -65,7 +68,9 @@ uv run python-exercises-generator generate --exercise flatten --examples "ages,c
 - `--examples`: Comma-separated list of example exercise names (default: uses Generator defaults: "countdown,count_lines")
 - `--prompt`: Name of prompt template to use (default: "default")
 - `--exercise`: Name of exercise to use as problem statement (alternative to stdin)
+- `--save`: Saves the generated solution to `output/generations/<exercise>/<model_name>.md` instead of printing to STDOUT.
 - `--model`: Model to use for generation (default: "meta-llama/llama-3.3-70b-instruct:free")
+- `--finetuned-model`: Preset name for a fine tuned model to use (overrides `--model` if provided)
 
 ### Distill Subcommand
 
@@ -84,11 +89,12 @@ uv run python-exercises-generator distill
 - `--examples`: Comma-separated list of example exercise names (default: uses StyleDistiller defaults: "ages,compact,easydict,find_duplicates,flatten,friday,minmax,numeric_range,pluck,reverse_words,transpose,window")
 - `--prompt`: Name of prompt template to use (default: "default")
 - `--model`: Model to use for distillation (default: "mistralai/devstral-2512:free")
+- `--finetuned-model`: Preset name for a fine tuned model to use (overrides `--model` if provided)
 
 
 ### Batch Generate Subcommand
 
-Generate solutions for a batch of exercises in one go (uses threading to parallelize):
+Generate solutions for a batch of exercises in one go (uses threading to parallelize). Saves output to `output/generations/<exercise>/<model_name>.md`:
 
 ```bash
 uv run python-exercises-generator batch-generate --model meta-llama/llama-3.3-70b-instruct:free
@@ -96,52 +102,47 @@ uv run python-exercises-generator batch-generate --model openai/gpt-oss-20b:free
 uv run python-exercises-generator batch-generate --model qwen/qwen3-coder-30b-a3b-instruct
 ```
 
-
-Generate solutions for finetuned models (see vLLM serving below):
-
-```bash
-uv run python-exercises-generator batch-generate --model llama-3.3-70b-instruct-finetuned-python-exercises --base-url "http://155.138.225.139:8000/v1/"
-uv run python-exercises-generator batch-generate --model gpt-oss-20b-finetuned-python-exercises --base-url "http://155.138.225.139:8000/v1/"
-uv run python-exercises-generator batch-generate --model qwen3-coder-30b-a3b-instruct-finetuned-python-exercises --base-url "http://155.138.225.139:8000/v1/"
-```
-
 #### Batch Generate Options
 
 - `--exercises`: Comma-separated list of exercises to generate for (uses `problem.md` in each). Output is saved to `output/generations/<exercise>/<model_name>.md`. Defaults to `DEFAULT_EXERCISES` in `generation.py`
 - `--model`: Model to use for generation
 
-#### vLLM Serving
+### Fine Tune Subcommand
 
-Once you have finetuned models, you can serve them using [vLLM](https://github.com/vllm-project/vllm) to expose an OpenAI-compatible API endpoint that you can subsequently use with `generate` or `batch-generate` by specifying `--base-url`.
-
-First, ensure vllm is installed:
+Fine tune a model on a set of example exercises (NVIDIA GPU with CUDA v12.8+ required) based on a preset name (see `FineTuner` class for details).
 
 ```bash
-uv pip install vllm --torch-backend=auto
-uv pip install bitsandbytes
+uv run python-exercises-generator fine-tune gpt-oss-20b
 ```
 
-If `vllm` install fails with lack of `libcudart.so`, install the CUDA toolkit from NVIDIA (`sudo apt install nvidia-cuda-toolkit` on Ubuntu) or set up CUDA via your package manager.
+#### Fine Tune Options
+- `--prompt`: Name of prompt template to use (default: "default")
+- `--save-merged`: Normally we just save a LoRA adapter. With this flag, we also save a merged full model (may be very large).
 
-Then, serve a base model (examples below):
+### Fine Tune Inference Subcommand
+
+Given a model that has already been fine tuned, run inference on a problem statement:
 
 ```bash
-Serving models that have been fine-tuned as LoRA adapters involves serving the original/base model and adding in a LoRA adapter (each of which has a name that can be used as `model_id`). Invoke like this (examples for each fine tune model below):
-
-```bash
-uv run vllm serve unsloth/Llama-3.3-70B-Instruct --quantization bitsandbytes --enable-lora --lora-modules llama-3.3-70b-instruct-finetuned-python-exercises=./output/finetuned_models/llama-3.3-70b-instruct-finetuned-python-exercises
-uv run vllm serve unsloth/gpt-oss-20b --enable-lora --lora-modules gpt-oss-20b-finetuned-python-exercises=./output/finetuned_models/gpt-oss-20b-finetuned-python-exercises
-uv run vllm serve unsloth/Qwen3-Coder-30B-A3B-Instruct --quantization bitsandbytes --enable-lora --lora-modules qwen3-coder-30b-a3b-instruct-finetuned-python-exercises=./output/finetuned_models/qwen3-coder-30b-a3b-instruct-finetuned-python-exercises
+uv run python-exercises-generator fine-tune-inference gpt-oss-20b --message "Write a python program to play sudoku."
 ```
 
-Note that `vLLM` especially without quantization can be resource intensive; ensure your system has sufficient GPU memory to load the base model along with the LoRA adapter. 80GB of GPU VRAM recommended to be able to serve all models.
+To run inference via the `generate` or `batch-generate` subcommands, use the `--finetuned-model` option with the preset name (see above).
 
-## Architecture
+### Fine Tuning on Remote GPU Host
 
-### Core Modules
+Once you have access to a remote GPU host with CUDA v12.8+ and have set up SSH access, rsync or SCP the project directory to the remote host, ensure `uv` is installed, then run the Installation steps above. After that, you can run the fine tuning commands above via SSH. Due to the potentially long runtime of fine tuning jobs, it is recommended to use `tmux` or `screen` to keep the session alive.
 
-- **cli.py**: CLI entry point with argument parsing and subcommand routing
-- **generation.py**: `Generator` class for creating exercise solutions via LLM
-- **distillation.py**: `StyleDistiller` class for analyzing writing style patterns
-- **exercises.py**: `Exercise` dataclass for loading and managing exercise data
-- **helpers.py**: Utility functions for prompt rendering and LLM API calls
+### Fine Tuning via Modal.com
+
+Modal.com can be used to run fine tuning jobs on their GPU instances. First, ensure you have a Modal account and have set up the Modal CLI. Then, you can run the fine tuning job using the provided `modal_app.py` script:
+
+```bash
+uv run modal run modal_app.py::app.finetune --model gpt-oss-20b
+```
+
+You can then run a batch generation job on Modal as well to generate for all default exercises:
+
+```bash
+uv run modal run modal_app.py::app.batch_generate --model gpt-oss-20b
+```

@@ -18,11 +18,16 @@ image = (
     )
     .add_local_dir("prompts", "/root/prompts")
     .add_local_dir("data", "/root/data")
+    .env({
+        "HF_HUB_ENABLE_HF_TRANSFER": "1",
+        "DEFAULT_GENERATION_EXAMPLES": DEFAULT_EXAMPLES,
+        "DEFAULT_GENERATION_EXERCISES": DEFAULT_EXERCISES,
+    })
 )
 
 with image.imports():
     from finetune import Finetuner
-    from generation import BatchGenerator, DEFAULT_EXERCISES
+    from generation import BatchGenerator, DEFAULT_EXAMPLES, DEFAULT_EXERCISES
 
 app = modal.App(APP_NAME)
 app_context = {

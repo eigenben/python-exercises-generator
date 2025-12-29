@@ -4,24 +4,26 @@ from helpers import render_prompt, call_llm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 import re
+import os
+from dotenv import load_dotenv
 
-DEFAULT_EXAMPLES = [
-    "are_consecutive",
-    "has_duplicates",
-]
+# Load environment variables from .env file
+load_dotenv()
 
-DEFAULT_EXERCISES = [
-    "poem",
-    "mask_keys",
-    "trim_empty",
-    "glink",
-    "lucas",
-    "fix_newlines",
-    "vote",
-    "easyclass",
-    "moviestats",
-    "random_rename",
-]
+# Load defaults from environment variables
+if "DEFAULT_GENERATION_EXAMPLES" not in os.environ:
+    raise RuntimeError(
+        "DEFAULT_GENERATION_EXAMPLES environment variable is not set. "
+        "Please copy .env.sample to .env and configure it."
+    )
+if "DEFAULT_GENERATION_EXERCISES" not in os.environ:
+    raise RuntimeError(
+        "DEFAULT_GENERATION_EXERCISES environment variable is not set. "
+        "Please copy .env.sample to .env and configure it."
+    )
+
+DEFAULT_EXAMPLES = os.environ["DEFAULT_GENERATION_EXAMPLES"].split(",")
+DEFAULT_EXERCISES = os.environ["DEFAULT_GENERATION_EXERCISES"].split(",")
 
 
 def save_generation(
