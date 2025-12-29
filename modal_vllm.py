@@ -91,7 +91,7 @@ def serve_qwen3_coder_30b() -> None:
 
     subprocess.Popen(" ".join(cmd), shell=True, stdout=sys.stdout, stderr=sys.stdout)
 
-### Devstral-Small-2-24B-Instruct-2512
+### Ministral-3-14B-Instruct-2512
 @app.function(
     gpu="H100",
     timeout=30 * 60,
@@ -105,17 +105,17 @@ def serve_qwen3_coder_30b() -> None:
 )
 @modal.concurrent(max_inputs=8)
 @modal.web_server(port=8000, startup_timeout=10 * 60)
-def serve_qwen3_coder_30b() -> None:
+def serve_ministral3_14b() -> None:
     import sys
     import subprocess
 
     cmd = [
         "vllm",
         "serve",
-        "unsloth/Devstral-Small-2-24B-Instruct-2512",
+        "unsloth/Ministral-3-14B-Instruct-2512",
         "--enable-lora",
         "--lora-modules",
-        "devstral-small-2-24b-instruct-2512-finetuned-python-exercises=/root/output/finetuned_models/devstral-small-2-24b-instruct-2512-finetuned-python-exercises",
+        "ministral-3-14b-instruct-2512-finetuned-python-exercises=/root/output/finetuned_models/ministral-3-14b-instruct-2512-finetuned-python-exercises",
         "--host",
         "0.0.0.0",
         "--port",

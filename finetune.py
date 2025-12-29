@@ -12,7 +12,7 @@ from transformers import DataCollatorForSeq2Seq
 class FinetuneConfig:
     model_name: str
     max_seq_length: int
-    dtype: torch.dtype
+    dtype: Optional[torch.dtype]
     load_in_4bit: bool
     lora_r: int
     lora_alpha: int
@@ -70,11 +70,11 @@ PRESET_CONFIGS = {
         max_steps=-1,
         num_train_epochs=1,
     ),
-    "devstral-small-2-24b-instruct-2512": FinetuneConfig(
-        model_name="unsloth/Devstral-Small-2-24B-Instruct-2512",
+    "ministral-3-14b-instruct-2512": FinetuneConfig(
+        model_name="unsloth/Ministral-3-14B-Instruct-2512",
         max_seq_length=2048,
         dtype=None,
-        load_in_4bit=True,
+        load_in_4bit=False,
         lora_r=16,
         lora_alpha=16,
         chat_template=None,
@@ -320,8 +320,8 @@ class Finetuner:
         self.apply_chat_template_to_dataset()
         print("[green]✓ Dataset prepared[/green]")
 
-        print("\n[bold blue]Sample Templated Text...[/bold blue]")
-        print(self.dataset[0]["text"])
+        # print("\n[bold blue]Sample Templated Text...[/bold blue]")
+        # print(self.dataset[0]["text"])
 
         # Setup trainer
         print("\n[bold blue]Setting up trainer...[/bold blue]")
