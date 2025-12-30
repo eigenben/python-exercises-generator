@@ -20,6 +20,7 @@ Then set up a default set of examples/exercises to use when generating/distillin
 
 ```bash
 cp .env.sample .env
+```
 
 Finally, place any sample exercises you want to use in the `data/exercises` directory. Each exercise should be in its own subdirectory with the required files (`metadata.yml`, `problem.md`, `solution.md`, etc.).
 
