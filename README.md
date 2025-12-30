@@ -89,7 +89,7 @@ uv run python-exercises-generator distill
 - `--pretty`: Print result with markdown formatting
 - `--examples`: Comma-separated list of example exercise names (default: uses StyleDistiller defaults: "ages,compact,easydict,find_duplicates,flatten,friday,minmax,numeric_range,pluck,reverse_words,transpose,window")
 - `--prompt`: Name of prompt template to use (default: "default")
-- `--model`: Model to use for distillation (default: "mistralai/devstral-2512:free")
+- `--model`: Model to use for distillation (default: "meta-llama/llama-3.3-70b-instruct:free")
 - `--finetuned-model`: Preset name for a fine tuned model to use (overrides `--model` if provided)
 
 
