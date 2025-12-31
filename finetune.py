@@ -23,6 +23,7 @@ class FinetuneConfig:
     chat_template: Optional[str]
     chat_template_instruction_part: str
     chat_template_response_part: str
+    chat_remove_prefix: Optional[str]
     per_device_train_batch_size: int
     gradient_accumulation_steps: int
     max_steps: int
@@ -39,6 +40,7 @@ PRESET_CONFIGS = {
         chat_template=None,
         chat_template_instruction_part="<|start|>user<|message|>",
         chat_template_response_part="<|start|>assistant<|message|>",
+        chat_remove_prefix=None,
         per_device_train_batch_size=4,
         gradient_accumulation_steps=1,
         max_steps=-1,
@@ -54,6 +56,23 @@ PRESET_CONFIGS = {
         chat_template=None,
         chat_template_instruction_part="<|im_start|>user\n",
         chat_template_response_part="<|im_start|>assistant\n",
+        chat_remove_prefix=None,
+        per_device_train_batch_size=4,
+        gradient_accumulation_steps=1,
+        max_steps=-1,
+        num_train_epochs=1,
+    ),
+    "gemma-3-27b-it": FinetuneConfig(
+        model_name="unsloth/gemma-3-27b-it",
+        max_seq_length=15000,
+        dtype=None,
+        load_in_4bit=True,
+        lora_r=16,
+        lora_alpha=16,
+        chat_template="gemma-3",
+        chat_template_instruction_part="<start_of_turn>user\n",
+        chat_template_response_part="<start_of_turn>model\n",
+        chat_remove_prefix="<bos>",
         per_device_train_batch_size=4,
         gradient_accumulation_steps=1,
         max_steps=-1,
@@ -141,6 +160,8 @@ class Finetuner:
         def formatting_prompts_func(examples):
             convos = examples["conversations"]
             texts = [self.tokenizer.apply_chat_template(convo, tokenize = False, add_generation_prompt = False) for convo in convos]
+            if self.config.chat_remove_prefix is not None:
+                texts = [text.removeprefix(self.config.chat_remove_prefix) for text in texts]
             return { "text" : texts, }
 
         self.dataset = standardize_sharegpt(self.dataset)
