@@ -41,4 +41,5 @@ def call_llm(
     response = client.chat.completions.create(
         model=model, messages=[{"role": "user", "content": prompt}]
     )
-    return response.choices[0].message.content
+    message = response.choices[0].message
+    return message.content if message.content is not None else message.reasoning
