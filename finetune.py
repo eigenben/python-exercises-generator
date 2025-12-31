@@ -124,6 +124,7 @@ class Finetuner:
         from datasets import Dataset
         import pathlib
         from exercises import load_all_exercises
+        from generation import DEFAULT_EXAMPLES
 
         # Load the prompt template
         template_path = pathlib.Path(f"prompts/finetune/{self.prompt}.md")
@@ -131,6 +132,9 @@ class Finetuner:
 
         # Load all exercises
         exercises = load_all_exercises()
+
+        # Filter out exercises that are used as examples in generation prompts
+        exercises = [ex for ex in exercises if ex.name not in DEFAULT_EXAMPLES]
 
         # Create conversations in ShareGPT format
         conversations = []
