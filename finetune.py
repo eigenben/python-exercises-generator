@@ -30,22 +30,6 @@ class FinetuneConfig:
     num_train_epochs: int
 
 PRESET_CONFIGS = {
-    "gpt-oss-20b": FinetuneConfig(
-        model_name="unsloth/gpt-oss-20b",
-        max_seq_length=15000,
-        dtype=None,
-        load_in_4bit=True,
-        lora_r=16,
-        lora_alpha=16,
-        chat_template=None,
-        chat_template_instruction_part="<|start|>user<|message|>",
-        chat_template_response_part="<|start|>assistant<|message|>",
-        chat_remove_prefix=None,
-        per_device_train_batch_size=4,
-        gradient_accumulation_steps=1,
-        max_steps=-1,
-        num_train_epochs=1,
-    ),
     "qwen3-coder-30b-a3b-instruct": FinetuneConfig(
         model_name="unsloth/Qwen3-Coder-30B-A3B-Instruct",
         max_seq_length=15000,
