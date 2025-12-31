@@ -98,7 +98,6 @@ uv run python-exercises-generator distill
 Generate solutions for a batch of exercises in one go (uses threading to parallelize). Saves output to `output/generations/<exercise>/<model_name>.md`:
 
 ```bash
-uv run python-exercises-generator batch-generate --model meta-llama/llama-3.3-70b-instruct:free
 uv run python-exercises-generator batch-generate --model openai/gpt-oss-20b:free
 uv run python-exercises-generator batch-generate --model qwen/qwen3-coder-30b-a3b-instruct
 ```

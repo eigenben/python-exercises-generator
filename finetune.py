@@ -29,21 +29,6 @@ class FinetuneConfig:
     num_train_epochs: int
 
 PRESET_CONFIGS = {
-    "llama-3.3-70b-instruct": FinetuneConfig(
-        model_name="unsloth/Llama-3.3-70B-Instruct",
-        max_seq_length=15000,
-        dtype=torch.float16,
-        load_in_4bit=True,
-        lora_r=16,
-        lora_alpha=16,
-        chat_template="llama-3.1",
-        chat_template_instruction_part="<|start_header_id|>user<|end_header_id|>\n\n",
-        chat_template_response_part="<|start_header_id|>assistant<|end_header_id|>\n\n",
-        per_device_train_batch_size=4,
-        gradient_accumulation_steps=2,
-        max_steps=-1,
-        num_train_epochs=1,
-    ),
     "gpt-oss-20b": FinetuneConfig(
         model_name="unsloth/gpt-oss-20b",
         max_seq_length=15000,
