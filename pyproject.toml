@@ -35,9 +35,11 @@ py-modules = [
     "cli",
     "distillation",
     "exercises",
+    "finetune_data",
     "finetune",
     "generation",
     "helpers",
+    "openai_finetune",
 ]
 
 [dependency-groups]

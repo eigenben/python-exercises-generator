@@ -127,30 +127,9 @@ class Finetuner:
 
     def load_exercises_dataset(self):
         from datasets import Dataset
-        import pathlib
-        from exercises import load_all_exercises
-        from generation import DEFAULT_EXERCISES
+        from finetune_data import build_finetune_conversations
 
-        # Load the prompt template
-        template_path = pathlib.Path(f"prompts/finetune/{self.prompt}.md")
-        template = template_path.read_text()
-
-        # Load all exercises
-        exercises = load_all_exercises()
-
-        # Filter out exercises that are used as examples in generation prompts
-        exercises = [ex for ex in exercises if ex.name not in DEFAULT_EXERCISES]
-
-        # Create conversations in ShareGPT format
-        conversations = []
-        for exercise in exercises:
-            if exercise.problem_md:
-                user_message = template.replace("{{ problem }}", exercise.problem_md)
-                conversation = [
-                    {"role": "user", "content": user_message},
-                    {"role": "assistant", "content": exercise.solution_md}
-                ]
-                conversations.append(conversation)
+        conversations = build_finetune_conversations(self.prompt)
 
         # Create dataset with conversations field
         dataset = Dataset.from_dict({"conversations": conversations})

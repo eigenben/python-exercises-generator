@@ -39,6 +39,13 @@ export LLM_BASE_URL="https://your-api-endpoint.com"
 export LLM_API_KEY="your-key-here"
 ```
 
+For OpenAI fine-tuning and fine-tuned inference:
+
+```bash
+export OPENAI_API_KEY="your-openai-key"
+export OPENAI_BASE_URL="https://api.openai.com/v1"
+```
+
 ## Usage
 
 ### Generate Subcommand
@@ -98,8 +105,9 @@ uv run python-exercises-generator distill
 Generate solutions for a batch of exercises in one go (uses threading to parallelize). Saves output to `output/generations/<exercise>/<model_name>.md`:
 
 ```bash
-uv run python-exercises-generator batch-generate --model openai/gpt-oss-20b:free
+uv run python-exercises-generator batch-generate --model google/gemma-3-27b-it:free
 uv run python-exercises-generator batch-generate --model qwen/qwen3-coder-30b-a3b-instruct
+uv run python-exercises-generator batch-generate --model openai/gpt-4o-mini-2024-07-18
 ```
 
 #### Batch Generate Options
@@ -128,6 +136,35 @@ uv run python-exercises-generator fine-tune-inference gpt-oss-20b --message "Wri
 ```
 
 To run inference via the `generate` or `batch-generate` subcommands, use the `--finetuned-model` option with the preset name (see above).
+
+### OpenAI Fine Tuning
+
+Prepare JSONL data, upload to OpenAI, and start a fine-tuning job:
+
+```bash
+uv run python-exercises-generator openai-finetune --model gpt-4o-mini-2024-07-18 --prompt default --wait
+```
+
+Export only (no upload/job):
+
+```bash
+uv run python-exercises-generator openai-finetune --model gpt-4o-mini-2024-07-18 --export-only
+```
+
+Check job status or wait on a job:
+
+```bash
+uv run python-exercises-generator openai-finetune-status --job-id ftjob_... --watch
+```
+
+### OpenAI Fine-Tuned Inference
+
+Once you have a fine-tuned model ID (e.g. `ft:...`), run inference using `generate` or `batch-generate` with the `--model` and `--base-url` options:
+
+```bash
+uv run python-exercises-generator generate --model ft:your-model-id --base-url https://api.openai.com/v1 --api-key $OPENAI_API_KEY
+uv run python-exercises-generator batch-generate --model ft:your-model-id --base-url https://api.openai.com/v1 --api-key $OPENAI_API_KEY
+```
 
 ### Fine Tuning on Remote GPU Host
 

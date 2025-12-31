@@ -196,6 +196,105 @@ def main() -> None:
         help="Push the merged model to Hugging Face Hub after saving",
     )
 
+    # OpenAI finetune subcommand
+    openai_finetune_parser = subparsers.add_parser(
+        "openai-finetune", help="Fine-tune an OpenAI model on exercise solutions"
+    )
+    openai_finetune_parser.add_argument(
+        "--prompt",
+        type=str,
+        default="default",
+        help="Name of the finetuning prompt template to use",
+    )
+    openai_finetune_parser.add_argument(
+        "--model",
+        type=str,
+        required=True,
+        help="Base OpenAI model to fine-tune (e.g. gpt-4o-mini-2024-07-18)",
+    )
+    openai_finetune_parser.add_argument(
+        "--validation-split",
+        type=float,
+        default=0.1,
+        help="Fraction of examples to use for validation (default: 0.1)",
+    )
+    openai_finetune_parser.add_argument(
+        "--seed",
+        type=int,
+        default=3407,
+        help="Random seed for train/validation split",
+    )
+    openai_finetune_parser.add_argument(
+        "--suffix",
+        type=str,
+        default=None,
+        help="Optional suffix for the fine-tuned model name",
+    )
+    openai_finetune_parser.add_argument(
+        "--output-dir",
+        type=str,
+        default=None,
+        help="Directory to write the JSONL dataset files",
+    )
+    openai_finetune_parser.add_argument(
+        "--export-only",
+        action="store_true",
+        help="Only export JSONL files without uploading or starting a fine-tune job",
+    )
+    openai_finetune_parser.add_argument(
+        "--wait",
+        action="store_true",
+        help="Wait for the fine-tuning job to complete",
+    )
+    openai_finetune_parser.add_argument(
+        "--base-url",
+        type=str,
+        help="Base URL for the OpenAI API",
+    )
+    openai_finetune_parser.add_argument(
+        "--api-key",
+        type=str,
+        help="API key for the OpenAI API",
+    )
+
+    # OpenAI finetune status subcommand
+    openai_finetune_status_parser = subparsers.add_parser(
+        "openai-finetune-status", help="Check or wait on an OpenAI fine-tuning job"
+    )
+    openai_finetune_status_parser.add_argument(
+        "--job-id",
+        type=str,
+        required=True,
+        help="Fine-tuning job ID",
+    )
+    openai_finetune_status_parser.add_argument(
+        "--watch",
+        action="store_true",
+        help="Poll the job until it completes",
+    )
+    openai_finetune_status_parser.add_argument(
+        "--interval",
+        type=int,
+        default=30,
+        help="Polling interval in seconds (default: 30)",
+    )
+    openai_finetune_status_parser.add_argument(
+        "--timeout",
+        type=int,
+        default=None,
+        help="Optional timeout in seconds",
+    )
+    openai_finetune_status_parser.add_argument(
+        "--base-url",
+        type=str,
+        help="Base URL for the OpenAI API",
+    )
+    openai_finetune_status_parser.add_argument(
+        "--api-key",
+        type=str,
+        help="API key for the OpenAI API",
+    )
+
     args = parser.parse_args()
 
     if args.action == "generate":
@@ -336,6 +435,90 @@ def main() -> None:
         console.print(f"\n[bold blue]Deploy with vLLM:[/bold blue]")
         console.print(f"[dim]  vllm serve {output_dir}[/dim]\n")
 
+    elif args.action == "openai-finetune":
+        from openai_finetune import OpenAIFinetuner
+
+        console = Console()
+        console.print("\n[bold blue]Preparing OpenAI fine-tuning dataset...[/bold blue]")
+        finetuner = OpenAIFinetuner(
+            prompt_name=args.prompt,
+            model=args.model,
+            output_dir=args.output_dir,
+            api_key=args.api_key,
+            base_url=args.base_url,
+        )
+        paths, stats = finetuner.prepare_dataset(
+            validation_split=args.validation_split,
+            seed=args.seed,
+        )
+        console.print(f"[green]✓[/green] Total examples: {stats.total_examples}")
+        console.print(f"[dim]  • Training: {stats.training_examples}[/dim]")
+        console.print(f"[dim]  • Validation: {stats.validation_examples}[/dim]")
+        console.print(f"[dim]  • Output dir: {paths.output_dir}[/dim]")
+
+        if args.export_only:
+            console.print("[yellow]Dataset export only; skipping upload and job creation.[/yellow]")
+            return
+
+        console.print("\n[bold blue]Uploading training file...[/bold blue]")
+        training_file_id, validation_file_id = finetuner.upload_dataset(paths)
+        console.print(f"[green]✓[/green] Training file ID: {training_file_id}")
+
+        if paths.validation_file is not None:
+            console.print(f"[green]✓[/green] Validation file ID: {validation_file_id}")
+
+        console.print("\n[bold blue]Creating fine-tuning job...[/bold blue]")
+        job = finetuner.create_job(
+            training_file_id=training_file_id,
+            validation_file_id=validation_file_id,
+            suffix=args.suffix,
+        )
+        console.print(f"[green]✓[/green] Job ID: {job.id}")
+        console.print(f"[dim]  • Status: {job.status}[/dim]")
+
+        metadata_path = finetuner.save_job_metadata(
+            job=job,
+            training_file_id=training_file_id,
+            validation_file_id=validation_file_id,
+            paths=paths,
+        )
+        console.print(f"[dim]  • Metadata: {metadata_path}[/dim]")
+
+        if args.wait:
+            console.print("\n[bold blue]Waiting for job to complete...[/bold blue]")
+            job = finetuner.wait_for_job(job.id)
+            console.print(f"[bold]Final status:[/bold] {job.status}")
+            if getattr(job, "fine_tuned_model", None):
+                console.print(f"[green]✓[/green] Fine-tuned model: {job.fine_tuned_model}")
+            metadata_path = finetuner.save_job_metadata(
+                job=job,
+                training_file_id=training_file_id,
+                validation_file_id=validation_file_id,
+                paths=paths,
+            )
+            console.print(f"[dim]  • Metadata updated: {metadata_path}[/dim]")
+
+    elif args.action == "openai-finetune-status":
+        from openai_finetune import OpenAIFinetuner
+
+        finetuner = OpenAIFinetuner(
+            api_key=args.api_key,
+            base_url=args.base_url,
+        )
+        if args.watch:
+            job = finetuner.wait_for_job(
+                args.job_id,
+                poll_interval=args.interval,
+                timeout_seconds=args.timeout,
+            )
+        else:
+            job = finetuner.get_job(args.job_id)
+
+        console = Console()
+        console.print(f"[bold]Job ID:[/bold] {job.id}")
+        console.print(f"[bold]Status:[/bold] {job.status}")
+        if getattr(job, "fine_tuned_model", None):
+            console.print(f"[green]✓[/green] Fine-tuned model: {job.fine_tuned_model}")
 
 if __name__ == "__main__":
     main()

@@ -31,11 +31,16 @@ def call_llm(
 
     # Use provided base_url/api_key if given, otherwise fall back to environment variables
     if base_url is None:
-        base_url = os.environ.get("LLM_BASE_URL") or "https://openrouter.ai/api/v1"
+        if model and model.startswith("ft:"):
+            base_url = os.environ.get("OPENAI_BASE_URL") or "https://api.openai.com/v1"
+        else:
+            base_url = os.environ.get("LLM_BASE_URL") or "https://openrouter.ai/api/v1"
 
     if api_key is None:
-        # Try LLM_API_KEY first, then OPENROUTER_API_KEY, then allow None
-        api_key = os.environ.get("LLM_API_KEY") or os.environ.get("OPENROUTER_API_KEY")
+        if model and model.startswith("ft:"):
+            api_key = os.environ.get("OPENAI_API_KEY")
+        else:
+            api_key = os.environ.get("LLM_API_KEY") or os.environ.get("OPENROUTER_API_KEY") or os.environ.get("OPENAI_API_KEY")
 
     client = OpenAI(base_url=base_url, api_key=api_key or "")
     response = client.chat.completions.create(
