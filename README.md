@@ -2,7 +2,7 @@
 
 This is a tool to generate Python programming exercise solutions and distill writing styles of Python exercises using large language models (LLMs). It supports few-shot learning from example exercises and can fine-tune models for improved performance. This is primarily an exploratory project to investigate LLM capabilities and limitations of fine-tuning.
 
-Attempts at getting LLMs to generate high-quality programming exercise solutions should start with good prompt engineering and few-shot learning from example exercises. To do that, we can first attempt to have an LLM distill the writing style from a large set of example exercises, then use that distilled style to generate new solutions (using `prompts/distillation/default.md` by default):
+Attempts at getting LLMs to generate high-quality programming exercise solutions should start with good prompt engineering and few-shot learning from example exercises. To do that, we can first attempt to have an LLM distill the writing style from a large set of example exercises (using prompts/distillation/default.md by default):
 
 ```
 uv run python-exercises-generator distill --examples "example1,example2,example3,example4,example5,example6"
