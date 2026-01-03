@@ -189,7 +189,7 @@ uv run python-exercises-generator batch-generate --model openai/gpt-4o-mini-2024
 
 ### Fine Tune Subcommand
 
-Fine tune a model on a set of example exercises (NVIDIA GPU with CUDA v12.8+ required) based on a preset name (see `finetune.py` for details). Current presets include:
+Fine tune a model on a set of example exercises (NVIDIA GPU with CUDA v12.8+ required) based on a preset name (see `src/python_exercises_generator/finetune/trainer.py` for details). Current presets include:
 
 - `qwen3-coder-30b-a3b-instruct`
 - `gemma-3-27b-it`
@@ -231,16 +231,16 @@ Once you have access to a remote GPU host with CUDA v12.8+ and have set up SSH a
 
 ### Fine Tuning via Modal.com
 
-Modal.com can be used to run fine tuning jobs on their GPU instances. First, ensure you have a Modal account and have set up the Modal CLI. Then, you can run the fine tuning job using the provided `modal_app.py` script:
+Modal.com can be used to run fine tuning jobs on their GPU instances. First, ensure you have a Modal account and have set up the Modal CLI. Then, you can run the fine tuning job using the provided `src/python_exercises_generator/integrations/modal_app.py` script:
 
 ```bash
-uv run modal run modal_app.py::app.finetune --model gemma-3-27b-it
+uv run modal run src/python_exercises_generator/integrations/modal_app.py::app.finetune --model gemma-3-27b-it
 ```
 
 You can then run a batch generation job on Modal as well to generate for all default exercises:
 
 ```bash
-uv run modal run modal_app.py::app.batch_generate --model gemma-3-27b-it
+uv run modal run src/python_exercises_generator/integrations/modal_app.py::app.batch_generate --model gemma-3-27b-it
 ```
 
 ### OpenAI Fine Tuning
@@ -291,4 +291,3 @@ Once you have a fine-tuned model ID (e.g. `ft:...`), run inference using `genera
 uv run python-exercises-generator generate --model ft:your-model-id --base-url https://api.openai.com/v1 --api-key $OPENAI_API_KEY
 uv run python-exercises-generator batch-generate --model ft:your-model-id --base-url https://api.openai.com/v1 --api-key $OPENAI_API_KEY
 ```
-
