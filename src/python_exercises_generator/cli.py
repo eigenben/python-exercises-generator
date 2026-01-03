@@ -1,14 +1,17 @@
 import argparse
 import sys
-from exercises import Exercise
-from generation import Generator, BatchGenerator, DEFAULT_EXERCISES
-from distillation import StyleDistiller
-from helpers import DEFAULT_MODEL
+
 from rich.console import Console
 from rich.markdown import Markdown
 
+from .config import get_defaults, load_env
+from .distillation import StyleDistiller
+from .exercises import Exercise
+from .generation import BatchGenerator, Generator
+
 
 def main() -> None:
+    load_env()
     parser = argparse.ArgumentParser(
         description="Python exercises generator CLI"
     )
@@ -361,7 +364,8 @@ def main() -> None:
         if args.exercises is not None:
             exercise_names = [name.strip() for name in args.exercises.split(",")]
         else:
-            exercise_names = DEFAULT_EXERCISES
+            defaults = get_defaults(require=True)
+            exercise_names = defaults.generation_exercises
         results = batch_generator(exercise_names)
 
         # Print summary of results
@@ -393,7 +397,7 @@ def main() -> None:
             print(result)
 
     elif args.action == "finetune":
-        from finetune import Finetuner
+        from .finetune import Finetuner
 
         finetuner = Finetuner(args.model_name, prompt=args.prompt)
         finetuner.train()
@@ -408,13 +412,13 @@ def main() -> None:
             console.print(f"[dim]  vllm serve {output_dir}[/dim]\n")
 
     elif args.action == "finetune-inference":
-        from finetune import Finetuner
+        from .finetune import Finetuner
 
         finetuner = Finetuner(args.model_name)
         print(finetuner.inference(args.message))
 
     elif args.action == "finetune-save-merged":
-        from finetune import Finetuner
+        from .finetune import Finetuner
 
         console = Console()
         console.print(f"\n[bold blue]Loading finetuned model:[/bold blue] [yellow]{args.model_name}[/yellow]")
@@ -436,7 +440,7 @@ def main() -> None:
         console.print(f"[dim]  vllm serve {output_dir}[/dim]\n")
 
     elif args.action == "openai-finetune":
-        from openai_finetune import OpenAIFinetuner
+        from .finetune.openai import OpenAIFinetuner
 
         console = Console()
         console.print("\n[bold blue]Preparing OpenAI fine-tuning dataset...[/bold blue]")
@@ -499,7 +503,7 @@ def main() -> None:
             console.print(f"[dim]  • Metadata updated: {metadata_path}[/dim]")
 
     elif args.action == "openai-finetune-status":
-        from openai_finetune import OpenAIFinetuner
+        from .finetune.openai import OpenAIFinetuner
 
         finetuner = OpenAIFinetuner(
             api_key=args.api_key,

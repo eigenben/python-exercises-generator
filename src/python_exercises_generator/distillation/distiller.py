@@ -1,20 +1,9 @@
 from typing import List, Optional
-from exercises import Exercise
-from helpers import render_prompt, call_llm
-import os
-from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Load defaults from environment variables
-if "DEFAULT_DISTILLATION_EXERCISES" not in os.environ:
-    raise RuntimeError(
-        "DEFAULT_DISTILLATION_EXAMPLES environment variable is not set. "
-        "Please copy .env.sample to .env and configure it."
-    )
-
-DEFAULT_EXERCISES = os.environ["DEFAULT_DISTILLATION_EXERCISES"].split(",")
+from ..config import get_defaults
+from ..exercises import Exercise
+from ..integrations.llm import call_llm
+from ..prompts import render_prompt
 
 class StyleDistiller:
     def __init__(
@@ -26,7 +15,8 @@ class StyleDistiller:
         self.prompt_name = prompt_name
         self.model = model
         if example_exercises is None:
-            self.example_exercises = [Exercise.load(name) for name in DEFAULT_EXERCISES]
+            defaults = get_defaults(require=True)
+            self.example_exercises = [Exercise.load(name) for name in defaults.distillation_exercises]
         else:
             self.example_exercises = example_exercises
 

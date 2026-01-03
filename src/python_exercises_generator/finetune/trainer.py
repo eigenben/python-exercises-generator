@@ -7,6 +7,8 @@ from typing import Optional
 from dataclasses import dataclass
 from contextlib import contextmanager
 from rich import print
+
+from ..paths import output_dir as get_output_dir
 from unsloth import FastLanguageModel
 from unsloth.chat_templates import get_chat_template, standardize_sharegpt, train_on_responses_only
 from trl import SFTConfig, SFTTrainer
@@ -111,7 +113,7 @@ class Finetuner:
 
     def load_exercises_dataset(self):
         from datasets import Dataset
-        from finetune_data import build_finetune_conversations
+        from .data import build_finetune_conversations
 
         conversations = build_finetune_conversations(self.prompt)
 
@@ -153,7 +155,7 @@ class Finetuner:
                 weight_decay = 0.001,
                 lr_scheduler_type = "linear",
                 seed = 3407,
-                output_dir = f"output/finetuned_models/{self.model_name}",
+                output_dir = str(get_output_dir() / "finetuned_models" / self.model_name),
                 report_to = "wandb",
             ),
         )
@@ -171,7 +173,7 @@ class Finetuner:
         """Save the finetuned model and tokenizer."""
         finetuned_model_name = f"{self.model_name}-finetuned-python-exercises"
         if output_dir is None:
-            output_dir = f"output/finetuned_models/{finetuned_model_name}"
+            output_dir = str(get_output_dir() / "finetuned_models" / finetuned_model_name)
         self.model.save_pretrained(output_dir)
         self.tokenizer.save_pretrained(output_dir)
         self.model.push_to_hub(finetuned_model_name, private=True)
@@ -186,7 +188,7 @@ class Finetuner:
                 output_dir = self.finetuned_model_dir
             else:
                 finetuned_model_name = f"{self.model_name}-finetuned-python-exercises"
-                output_dir = f"output/finetuned_models/{finetuned_model_name}"
+                output_dir = str(get_output_dir() / "finetuned_models" / finetuned_model_name)
 
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name = output_dir,
@@ -223,7 +225,7 @@ class Finetuner:
 
         finetuned_model_name = f"{self.model_name}-finetuned-python-exercises"
         if output_dir is None:
-            output_dir = f"output/finetuned_models/{finetuned_model_name}-merged"
+            output_dir = str(get_output_dir() / "finetuned_models" / f"{finetuned_model_name}-merged")
 
         print(f"[bold blue]Saving merged model...[/bold blue]")
         print(f"[dim]  • Output directory: {output_dir}[/dim]")

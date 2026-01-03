@@ -8,7 +8,8 @@ from typing import Iterable, Optional, Tuple
 
 from openai import OpenAI
 
-from finetune_data import build_finetune_conversations
+from ..paths import output_dir as get_output_dir
+from .data import build_finetune_conversations
 
 
 @dataclass
@@ -63,7 +64,7 @@ class OpenAIFinetuner:
 
         output_dir = self.output_dir
         if output_dir is None:
-            output_dir = f"output/openai_finetune/{prompt_name}"
+            output_dir = str(get_output_dir() / "openai_finetune" / prompt_name)
         output_path = pathlib.Path(output_dir)
 
         training_path = output_path / "train.jsonl"

@@ -1,29 +1,13 @@
 from typing import List, Optional
-from exercises import Exercise
-from helpers import render_prompt, call_llm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 import re
-import os
-from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Load defaults from environment variables
-if "DEFAULT_GENERATION_EXAMPLES" not in os.environ:
-    raise RuntimeError(
-        "DEFAULT_GENERATION_EXAMPLES environment variable is not set. "
-        "Please copy .env.sample to .env and configure it."
-    )
-if "DEFAULT_GENERATION_EXERCISES" not in os.environ:
-    raise RuntimeError(
-        "DEFAULT_GENERATION_EXERCISES environment variable is not set. "
-        "Please copy .env.sample to .env and configure it."
-    )
-
-DEFAULT_EXAMPLES = os.environ["DEFAULT_GENERATION_EXAMPLES"].split(",")
-DEFAULT_EXERCISES = os.environ["DEFAULT_GENERATION_EXERCISES"].split(",")
+from ..config import get_defaults
+from ..exercises import Exercise
+from ..integrations.llm import call_llm
+from ..paths import output_dir
+from ..prompts import render_prompt
 
 
 def save_generation(
@@ -43,7 +27,7 @@ def save_generation(
     Returns:
         Path to the saved file
     """
-    from helpers import DEFAULT_MODEL
+    from ..config import DEFAULT_MODEL
     model_name = model or DEFAULT_MODEL
     # Sanitize model name: remove everything before "/", then lowercase and alphanumeric + underscores only
     model_name = model_name.split('/')[-1]
@@ -55,7 +39,7 @@ def save_generation(
     else:
         filename = f"{model_name_sanitized}_{prompt_name}.md"
 
-    save_path = Path(f"output/generations/{exercise_name}/{filename}")
+    save_path = output_dir() / "generations" / exercise_name / filename
 
     save_path.parent.mkdir(parents=True, exist_ok=True)
     save_path.write_text(content)
@@ -81,7 +65,8 @@ class Generator:
         self.base_url = base_url
         self.api_key = api_key
         if example_exercises is None:
-            self.example_exercises = [Exercise.load(name) for name in DEFAULT_EXAMPLES]
+            defaults = get_defaults(require=True)
+            self.example_exercises = [Exercise.load(name) for name in defaults.generation_examples]
         else:
             self.example_exercises = example_exercises
 
@@ -101,7 +86,7 @@ class Generator:
         prompt_text = self.prompt(problem_statement)
 
         if self.finetuned_model is not None:
-            from finetune import Finetuner
+            from ..finetune import Finetuner
             finetuner = Finetuner(self.finetuned_model)
             result = finetuner.inference(prompt_text)
         else:
@@ -174,7 +159,7 @@ class BatchGenerator:
         # If using a finetuned model, create and load a single instance
         finetuner = None
         if self.finetuned_model is not None:
-            from finetune import Finetuner
+            from ..finetune import Finetuner
             finetuner = Finetuner(self.finetuned_model)
             finetuner.load_finetuned_model_for_inference()
 

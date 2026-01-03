@@ -1,11 +1,13 @@
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 import pathlib
 import yaml
 
+from ..paths import data_dir
+
 def load_all_exercises() -> List["Exercise"]:
     exercises = []
-    exercises_path = pathlib.Path("data/exercises")
+    exercises_path = data_dir()
     for exercise_dir in exercises_path.iterdir():
         if exercise_dir.is_dir():
             exercise = Exercise.load(exercise_dir.name)
@@ -26,7 +28,7 @@ class Exercise:
 
     @classmethod
     def load(cls, exercise_code: str) -> "Exercise":
-        path = pathlib.Path("data/exercises") / exercise_code
+        path = data_dir() / exercise_code
         if not path.exists():
             raise FileNotFoundError(f"Exercise not found: '{exercise_code}'")
         metadata_path = path / "metadata.yml"

@@ -1,12 +1,13 @@
 import pathlib
 from typing import Iterable, List, Optional
 
-from exercises import load_all_exercises
-from generation import DEFAULT_EXERCISES
+from ..config import get_defaults
+from ..exercises import load_all_exercises
+from ..paths import prompts_dir
 
 
 def load_finetune_template(prompt_name: str) -> str:
-    template_path = pathlib.Path(f"prompts/finetune/{prompt_name}.md")
+    template_path = prompts_dir() / "finetune" / f"{prompt_name}.md"
     return template_path.read_text()
 
 
@@ -18,7 +19,8 @@ def build_finetune_conversations(
 
     exercises = load_all_exercises()
     if exclude_exercise_names is None:
-        exclude_exercise_names = DEFAULT_EXERCISES
+        defaults = get_defaults(require=True)
+        exclude_exercise_names = defaults.generation_exercises
     exclude_set = set(exclude_exercise_names)
 
     conversations = []
